@@ -21,6 +21,7 @@ feature -- File
 
 	e_file_does_not_exists (a_file_name: READABLE_STRING_GENERAL): STRING_32 do Result := locale.formatted_string ("The file '$1' does not exist.", [a_file_name]) end
 	e_folder_does_not_exists (a_file_name: READABLE_STRING_GENERAL): STRING_32 do Result := locale.formatted_string ("The file '$1' does not exist.", [a_file_name]) end
+	e_bookmark_load_error (a_file_name: READABLE_STRING_GENERAL): STRING_32 do Result := locale.formatted_string("The file extension '$1' should be *.odt or *.docx", [a_file_name]) end
 
 feature -- Project
 
@@ -63,7 +64,7 @@ feature -- Prompts
 	e_save_session_data_failed: attached STRING_32 do Result := locale.translation ("There was an error when trying to store the EiffelStudio session data.") end
 
 note
-	copyright:	"Copyright (c) 1984-2016, Eiffel Software"
+	copyright:	"Copyright (c) 1984-2018, Eiffel Software"
 	license:	"GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options:	"http://www.eiffel.com/licensing"
 	copying: "[

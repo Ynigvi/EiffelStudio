@@ -41,6 +41,7 @@ feature -- Button texts
 	b_Add: STRING_32 							do Result := locale.translation("Add")	end
 	b_Add_details: STRING_32					do Result := locale.translation("Add...") end
 	b_Add_text: STRING_32 						do Result := locale.translation("Add ->")	end
+	b_Add_Bookmark: STRING_32					do Result := locale.translation("Add bookmarks...")	end
 	b_alphabetical_class_list: STRING_32 		do Result := locale.translation("Alphabetical class list")	end
 	b_alphabetical_cluster_list: STRING_32 		do Result := locale.translation("Alphabetical cluster list")	end
 	b_And: STRING_32								do Result := locale.translation("And")	end
@@ -2311,6 +2312,7 @@ feature -- Title part
 
 	t_acknowledge_change: STRING_32				do Result := locale.translation("Acknowledge selected affected items.") end
 	t_Add_eis_entry: STRING_32					do Result := locale.translation("Add a new entry in the list.")	end
+	t_Add_Bookmark_info: STRING_32				do Result := locale.translation("Analyze a file and add bookmarks to it.")	end
 	t_Add_search_scope: STRING_32				do Result := locale.translation("Add Search Scope")	end
 	t_Alias: STRING_32							do Result := locale.translation("Alias")	end
 	t_All_test_runs: STRING_32					do Result := locale.translation("Show test run history dialog")	end
@@ -3025,7 +3027,7 @@ feature -- String escape
 		end
 
 note
-	copyright: "Copyright (c) 1984-2017, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

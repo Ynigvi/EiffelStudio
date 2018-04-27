@@ -284,6 +284,14 @@ feature {NONE} -- Initialization
 			l_button.select_actions.extend (agent on_go_to_button_pressed)
 			l_toolbar.extend (l_button)
 
+				-- Add bookmark button
+			create l_button.make
+			l_button.set_text (interface_names.b_Add_Bookmark)
+			l_button.set_tooltip (interface_names.t_Add_Bookmark_info)
+			l_button.set_pixel_buffer (pixmaps.icon_pixmaps.general_information_icon_buffer)
+			l_button.select_actions.extend (agent on_add_bookmark_button_pressed)
+			l_toolbar.extend (l_button)
+
 				-- Acknowledge button
 			create l_button.make
 			acknowledge_button := l_button
@@ -479,6 +487,41 @@ feature -- Callbacks
 			end
 		end
 
+	on_add_bookmark_button_pressed
+			-- "Add bookmarks" button pressed
+			-- Open a file open dialog before analyze it.
+		local
+			l_dial: EV_FILE_OPEN_DIALOG
+		do
+			create l_dial.make_with_title ("Choose a file to analyze")
+			l_dial.open_actions.extend (agent on_open(l_dial))
+			l_dial.disable_multiple_selection
+			l_dial.show_modal_to_window (panel.develop_window.widget_top_level_window (Current))
+		end
+
+	on_open (a_dial: EV_FILE_OPEN_DIALOG)
+		-- "Open" button on add bookmarks file explorer pressed
+		-- Analyze file and add bookmarks on each titles
+		local
+			l_file: STRING
+			l_error_dial: EV_WARNING_DIALOG
+			l_document_analyzer: ES_EIS_DOCUMENT_ANALYZER
+		do
+			l_file := a_dial.file_name
+			if l_file.ends_with (".doc") then
+				-- Microsoft office document treatment
+
+			elseif l_file.ends_with (".odt") then
+				-- Open Document Text treatment
+				create {ES_EIS_OPEN_DOCUMENT_ANALYZER} l_document_analyzer.make (l_file)
+				l_document_analyzer.analyze
+			else
+				-- Not supported extension
+				create l_error_dial.make_with_text (interface_messages.e_bookmark_load_error(a_dial.file_title))
+				l_error_dial.show_modal_to_window (panel.develop_window.widget_top_level_window (Current))
+			end
+		end
+
 	on_acknowledge_button_selected
 			-- On acknowledge button selected
 		do
@@ -668,7 +711,7 @@ invariant
 	tree_not_void: tree /= Void
 
 note
-	copyright: "Copyright (c) 1984-2013, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

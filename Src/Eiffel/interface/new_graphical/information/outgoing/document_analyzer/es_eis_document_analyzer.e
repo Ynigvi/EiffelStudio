@@ -64,7 +64,7 @@ feature -- Compressed files manipulations
 	analyze
 	-- Add bookmarks to the file
 		require
-			file_path.ends_with(".doc") or file_path.ends_with(".odt")
+			file_path.ends_with(".docx") or file_path.ends_with(".odt")
 		do
 			unzip
 			parse
@@ -76,6 +76,9 @@ feature -- Compressed files manipulations
 feature
 	file_path: STRING
 	-- Path of file to analyze
+
+	content_file_path: STRING deferred end
+	-- Relative path of content file into compressed archive
 
 ;note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"

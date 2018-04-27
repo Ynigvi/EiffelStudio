@@ -13,7 +13,8 @@
 		<setting name="console_application" value="true"/>
 		<setting name="exception_trace" value="true"/>
 		<capability>
-			<concurrency support="none"/>
+			<catcall_detection support="none"/>
+			<concurrency support="thread"/>
 			<void_safety support="none"/>
 		</capability>
 		<external_include location="$(EIFFEL_SRC)/C/run-time"/>
@@ -115,6 +116,7 @@
 			<warning name="once_in_generic" enabled="false"/>
 		</option>
 		<capability>
+			<catcall_detection support="none"/>
 			<concurrency support="thread" use="thread"/>
 			<void_safety support="none" use="none"/>
 		</capability>
@@ -272,7 +274,12 @@
 					<platform value="windows"/>
 				</condition>
 			</file_rule>
-			<cluster name="document_analyzer" location="\home\ynigvi\dev\EiffelStudio\Src\Eiffel\interface\new_graphical\information\outgoing\document_analyzer\"/>
+			<file_rule>
+				<exclude>^new_graphical/information/outgoing/document_analyzer$</exclude>
+			</file_rule>
+			<file_rule>
+				<exclude>^new_graphical/information/outgoing/document_analyzer$</exclude>
+			</file_rule>
 		</cluster>
 		<cluster name="process_gui" location="$ISE_LIBRARY\library\process\gui\" recursive="true"/>
 		<cluster name="tty" location="$EIFFEL_SRC\Eiffel\interface\tty\" recursive="true">

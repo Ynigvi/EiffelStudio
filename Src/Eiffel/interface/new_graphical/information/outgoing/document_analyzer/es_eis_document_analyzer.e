@@ -1,5 +1,5 @@
 note
-	description: "Analyze the file given in creation to add bookmarks to titles' style."
+	description: "Analyze the file given at creation to add bookmarks to titles' style."
 	date: "$Date: 2017-08-30 10:00:30 +0200 (Wed, 30 Aug 2017) $"
 	revision: "$Revision: $"
 
@@ -30,8 +30,9 @@ feature -- Compressed files manipulations
 			"C inline use <stdlib.h>"
 		alias
 			"{
-				char* cmd = malloc(sizeof (char) * (18 + strlen ((char*) *$a_file_path)));
-				sprintf(cmd, "zip -r %s ~/tmp_doc", (char*) *$a_file_path);
+				char* cmd = malloc(sizeof (char) * (38 + strlen ((char*) *$a_file_path)));
+				sprintf(cmd, "cd ~/tmp_doc && zip -r \"%s\" *", (char*) *$a_file_path);
+				printf("%s", cmd);
 				system (cmd);
 			}"
 		end
@@ -50,11 +51,28 @@ feature -- Compressed files manipulations
 			"C inline use <stdlib.h>"
 		alias
 			"{
-				char* cmd = malloc(sizeof (char) * (20 + strlen ((char*) *$a_file_path)));
-				sprintf(cmd, "unzip %s -d ~/tmp_doc", (char*) *$a_file_path);
+				char* cmd = malloc(sizeof (char) * (25 + strlen ((char*) *$a_file_path)));
+				sprintf(cmd, "unzip -u \"%s\" -d ~/tmp_doc", (char*) *$a_file_path);
 				system (cmd);
 			}"
 		end
+
+feature -- Clear files
+
+	clear
+			-- External call to linux rm command.
+			-- Should be remplace by a multiplatform unzip
+			-- in future.
+		external
+			"C inline use <stdlib.h>"
+		alias
+			"{
+				system ("pwd");
+				system ("rm -r ~/tmp_doc/*");
+			}"
+		end
+
+feature -- File analysis
 
 	parse
 			-- Parse the xml content file to add bookmarks on title that does not contains ones
@@ -62,23 +80,24 @@ feature -- Compressed files manipulations
 		end
 
 	analyze
-	-- Add bookmarks to the file
+		-- Add bookmarks to the file
 		require
 			file_path.ends_with(".docx") or file_path.ends_with(".odt")
 		do
 			unzip
 			parse
 			zip
+			clear
 		ensure
 			file_path = old file_path
 		end
 
 feature
 	file_path: STRING
-	-- Path of file to analyze
+		-- Path of file to analyze
 
 	content_file_path: STRING deferred end
-	-- Relative path of content file into compressed archive
+		-- Relative path of content file into compressed archive
 
 ;note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"

@@ -508,9 +508,10 @@ feature -- Callbacks
 			l_document_analyzer: ES_EIS_DOCUMENT_ANALYZER
 		do
 			l_file := a_dial.file_name
-			if l_file.ends_with (".doc") then
+			if l_file.ends_with (".docx") then
 				-- Microsoft office document treatment
-
+				create {ES_EIS_MICROSOFT_WORD_DOCUMENT_ANALYZER} l_document_analyzer.make (l_file)
+				l_document_analyzer.analyze
 			elseif l_file.ends_with (".odt") then
 				-- Open Document Text treatment
 				create {ES_EIS_OPEN_DOCUMENT_ANALYZER} l_document_analyzer.make (l_file)

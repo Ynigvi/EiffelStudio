@@ -1,1 +1,5 @@
 .svn
+Src/Eiffel/Ace/EIFGENs/
+*.o
+*.a
+*.so

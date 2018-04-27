@@ -16,6 +16,7 @@
 			<concurrency support="none"/>
 			<void_safety support="none"/>
 		</capability>
+		<external_include location="$(EIFFEL_SRC)/C/run-time"/>
 		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf" readonly="false"/>
 		<library name="base_extension" location="$ISE_LIBRARY\library\base_extension\base_extension.ecf" readonly="false"/>
 		<library name="base_process" location="$ISE_LIBRARY\library\process\base\base_process.ecf"/>
@@ -209,7 +210,7 @@
 		<library name="tagging-ev" location="$EIFFEL_SRC\framework\tagging\ev\tagging-ev.ecf" readonly="false" use_application_options="true"/>
 		<library name="testing_engine" location="$EIFFEL_SRC\framework\testing\testing.ecf" readonly="false" use_application_options="true"/>
 		<library name="thread" location="$ISE_LIBRARY\library\thread\thread.ecf" readonly="false"/>
-		<library name="uri" location="$EIFFEL_SRC\library\text\uri\uri.ecf" />
+		<library name="uri" location="$EIFFEL_SRC\library\text\uri\uri.ecf"/>
 		<library name="uri_launcher" location="$EIFFEL_SRC\framework\uri_launcher\uri_launcher.ecf" use_application_options="true"/>
 		<library name="vision2" location="$ISE_LIBRARY\library\vision2\vision2.ecf" readonly="false"/>
 		<library name="vision2_extension" location="$ISE_LIBRARY\library\vision2_extension\vision2_extension.ecf" readonly="false" use_application_options="true"/>
@@ -271,6 +272,7 @@
 					<platform value="windows"/>
 				</condition>
 			</file_rule>
+			<cluster name="document_analyzer" location="\home\ynigvi\dev\EiffelStudio\Src\Eiffel\interface\new_graphical\information\outgoing\document_analyzer\"/>
 		</cluster>
 		<cluster name="process_gui" location="$ISE_LIBRARY\library\process\gui\" recursive="true"/>
 		<cluster name="tty" location="$EIFFEL_SRC\Eiffel\interface\tty\" recursive="true">
@@ -286,10 +288,16 @@
 	<target name="bench_cocoa" extends="bench">
 		<description>Compile on Mac OS X using the Cocoa framework instead of GTK+</description>
 		<setting name="platform" value="macintosh"/>
+		<capability>
+			<concurrency support="thread"/>
+		</capability>
 		<variable name="vision_implementation" value="cocoa"/>
 	</target>
 	<target name="compile_all_bench" extends="bench">
 		<root all_classes="true"/>
+		<capability>
+			<concurrency support="thread"/>
+		</capability>
 	</target>
 	<target name="compile_all_batch" extends="batch">
 		<root all_classes="true"/>

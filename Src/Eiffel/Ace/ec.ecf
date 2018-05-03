@@ -120,6 +120,7 @@
 			<concurrency support="thread" use="thread"/>
 			<void_safety support="none" use="none"/>
 		</capability>
+		<external_include location="$(EIFFEL_SRC)/C_library/minizip/"/>
 		<external_object location="$(EIFFEL_SRC)/C/ipc/ewb/libmtwewb.a">
 			<condition>
 				<platform excluded_value="windows"/>
@@ -161,6 +162,8 @@
 				<platform value="windows"/>
 			</condition>
 		</external_object>
+		<external_object location="$(EIFFEL_SRC)/C_library/minizip/libminizip.a"/>
+		<external_library location="$(EIFFEL_SRC)/C_library/zlib/libz.a"/>
 		<variable name="batch_framework" value="false"/>
 		<library name="auto_test" location="$EIFFEL_SRC\framework\auto_test\auto_test.ecf" readonly="false" use_application_options="true"/>
 		<library name="com_light" location="$EIFFEL_SRC\framework\com_light\com_light.ecf" readonly="false" use_application_options="true"/>

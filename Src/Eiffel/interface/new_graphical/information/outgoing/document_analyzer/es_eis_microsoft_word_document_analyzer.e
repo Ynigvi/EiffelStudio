@@ -109,7 +109,7 @@ feature
 		end
 
 feature
-	content_file_path: STRING do Result := "/home/ynigvi/tmp_doc/word/document.xml" end
+	content_file_path: STRING do Result := tmp_directory_path + "/word/document.xml" end
 note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license: "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"

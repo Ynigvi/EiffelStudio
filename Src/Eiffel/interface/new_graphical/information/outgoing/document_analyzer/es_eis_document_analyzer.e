@@ -12,6 +12,7 @@ feature {NONE} -- Initialization
 			-- Initialize the object with the file to analyze
 		do
 			file_path := a_file_path
+			tmp_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
 		end
 
 feature -- Compressed files manipulations
@@ -19,21 +20,17 @@ feature -- Compressed files manipulations
 	zip
 			-- Compress a file and rename it
 		local
-			l_directory_path: STRING
 			l_directory: DIRECTORY
 		do
-			l_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
-			zip_call (l_directory_path.to_c, file_path.to_c)
-			create l_directory.make_with_name (l_directory_path)
+			zip_call (tmp_directory_path.to_c, file_path.to_c)
+			create l_directory.make_with_name (tmp_directory_path)
 			if l_directory.exists then
 				l_directory.recursive_delete
 			end
 		end
 
 	zip_call (a_directory_path: ANY; a_zip_file_path: ANY)
-			-- External call to linux zip command.
-			-- Should be remplace by a multiplatform zip
-			-- in future.
+			-- External call to library zip command.
 		external
 			"C inline use %"minizip.h%""
 		alias
@@ -45,42 +42,23 @@ feature -- Compressed files manipulations
 	unzip
 			-- Uncompress a file in order to be able to parse it
 		local
-			l_directory_path: STRING
 			l_directory: DIRECTORY
 		do
-			l_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
-			create l_directory.make_with_name (l_directory_path)
+			create l_directory.make_with_name (tmp_directory_path)
 			if l_directory.exists then
 				l_directory.recursive_delete
 			end
 			l_directory.create_dir
-			unzip_call (file_path.to_c, l_directory_path.to_c)
+			unzip_call (file_path.to_c, tmp_directory_path.to_c)
 		end
 
 	unzip_call (a_zip_file_path: ANY; a_directory_path: ANY)
-			-- External call to linux unzip command.
-			-- Should be remplace by a multiplatform unzip
-			-- in future.
+			-- External call to library unzip command.
 		external
 			"C inline use %"miniunz.h%""
 		alias
 			"{
 				unzip_folder((char*) *$a_zip_file_path, (char*) *$a_directory_path);
-			}"
-		end
-
-feature -- Clear files
-
-	clear
-			-- External call to linux rm command.
-			-- Should be remplace by a multiplatform unzip
-			-- in future.
-		external
-			"C inline use <stdlib.h>"
-		alias
-			"{
-				system ("pwd");
-				system ("rm -r ~/tmp_doc/*");
 			}"
 		end
 
@@ -99,7 +77,6 @@ feature -- File analysis
 			unzip
 			parse
 			zip
-			clear
 		ensure
 			file_path = old file_path
 		end
@@ -107,6 +84,9 @@ feature -- File analysis
 feature
 	file_path: STRING
 		-- Path of file to analyze
+
+	tmp_directory_path: STRING
+		-- Path to temporary directory where to extract zip
 
 	content_file_path: STRING deferred end
 		-- Relative path of content file into compressed archive

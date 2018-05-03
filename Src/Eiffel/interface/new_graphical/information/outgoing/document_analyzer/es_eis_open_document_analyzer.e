@@ -70,7 +70,7 @@ feature
 				l_outfile.close
 			end
 feature
-	content_file_path: STRING do Result := "/home/ynigvi/test_zip_eiffel/test_odt/content.xml" end
+	content_file_path: STRING do Result := tmp_directory_path + "/content.xml" end
 note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license: "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"

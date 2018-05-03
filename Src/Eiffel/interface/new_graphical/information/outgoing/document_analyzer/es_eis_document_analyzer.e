@@ -10,9 +10,21 @@ feature {NONE} -- Initialization
 
 	make (a_file_path: STRING)
 			-- Initialize the object with the file to analyze
+		local
+			i: INTEGER
+			l_path: STRING
+			l_file: STRING
 		do
 			file_path := a_file_path
-			tmp_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
+			i := file_path.last_index_of ('/', file_path.count)
+			if i = 0 then
+				i := file_path.last_index_of ('\', file_path.count)
+			end
+			l_path := file_path.substring (1, i)
+			l_file := file_path.substring (i+1, file_path.count)
+			l_file.replace_substring_all (".", "_")
+			l_file.replace_substring_all (" ", "_")
+			tmp_directory_path := l_path+l_file
 		end
 
 feature -- Compressed files manipulations

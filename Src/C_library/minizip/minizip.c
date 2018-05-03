@@ -196,7 +196,6 @@ int zip_folder(const char* folder_name, const char* zip_name)
 		DIR* dir = opendir(filenameinzip);
 		if (dir == NULL)
 		{
-			printf("Adding %s \n",filenameinzip);
 			fin = fopen(filenameinzip,"rb");
 			if (fin != NULL) 
 			{
@@ -243,19 +242,16 @@ int zip_folder(const char* folder_name, const char* zip_name)
 		}
 		else
 		{
-			printf("%s is a directory \n",filenameinzip);
 			struct dirent* file;
 
 			while((file = readdir(dir)) != NULL)
 			{
-				printf(">>>>> %s \n",file->d_name);
 				if(strcmp(file->d_name,"..") != 0 && strcmp(file->d_name,".") != 0) {
 					char* newfilename = malloc((strlen(filenameinzip)+strlen(file->d_name)+2)*sizeof(char)); 
 					newfilename[0] = '\0';
 					strcat(newfilename,filenameinzip);
 					strcat(newfilename,"/");
 					strcat(newfilename,file->d_name);
-					printf("add %s to list \n",newfilename);
 					append_to_list(l, newfilename);
 				}
 			} 	
@@ -272,4 +268,5 @@ int zip_folder(const char* folder_name, const char* zip_name)
 	else
 		return 0;
 } 
+
 

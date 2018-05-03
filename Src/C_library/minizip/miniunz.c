@@ -137,7 +137,6 @@ int makedir (newdir)
       *p = 0;
       if ((mymkdir(buffer) == -1) && (errno == ENOENT))
         {
-          printf("couldn't create directory %s\n",buffer);
           free(buffer);
           return 0;
         }
@@ -169,7 +168,6 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
 
     if (err!=UNZ_OK)
     {
-        printf("error %d with zipfile in unzGetCurrentFileInfo\n",err);
         return err;
     }
 
@@ -177,7 +175,6 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
     buf = (void*)malloc(size_buf);
     if (buf==NULL)
     {
-        printf("Error allocating memory\n");
         return UNZ_INTERNALERROR;
     }
 
@@ -225,7 +222,6 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
                     char answer[128];
                     int ret;
 
-                    printf("The file %s exists. Overwrite ? [y]es, [n]o, [A]ll: ",write_filename);
                     ret = scanf("%1s",answer);
                     if (ret != 1) 
                     {
@@ -262,7 +258,6 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
 
             if (fout==NULL)
             {
-                printf("error opening %s\n",write_filename);
             }
         }
 
@@ -274,13 +269,11 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
                 err = unzReadCurrentFile(uf,buf,size_buf);
                 if (err<0)
                 {
-                    printf("error %d with zipfile in unzReadCurrentFile\n",err);
                     break;
                 }
                 if (err>0)
                     if (fwrite(buf,err,1,fout)!=1)
                     {
-                        printf("error in writing extracted file\n");
                         err=UNZ_ERRNO;
                         break;
                     }
@@ -299,7 +292,6 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
             err = unzCloseCurrentFile (uf);
             if (err!=UNZ_OK)
             {
-                printf("error %d with zipfile in unzCloseCurrentFile\n",err);
             }
         }
         else
@@ -324,7 +316,7 @@ int do_extract(uf,opt_extract_without_path,opt_overwrite,password)
 
     err = unzGetGlobalInfo (uf,&gi);
     if (err!=UNZ_OK)
-        printf("error %d with zipfile in unzGetGlobalInfo \n",err);
+			;
 
     for (i=0;i<gi.number_entry;i++)
     {
@@ -338,7 +330,6 @@ int do_extract(uf,opt_extract_without_path,opt_overwrite,password)
             err = unzGoToNextFile(uf);
             if (err!=UNZ_OK)
             {
-                printf("error %d with zipfile in unzGoToNextFile\n",err);
                 break;
             }
         }
@@ -357,7 +348,6 @@ int do_extract_onefile(uf,filename,opt_extract_without_path,opt_overwrite,passwo
     int err = UNZ_OK;
     if (unzLocateFile(uf,filename,CASESENSITIVITY)!=UNZ_OK)
     {
-        printf("file %s not found in the zipfile\n",filename);
         return 2;
     }
 

@@ -385,6 +385,7 @@ feature {NONE} -- Callbacks
 				if lt_entry.source /= Void and then l_source.is_equal (lt_entry.source) then
 						-- Do nothing when the source is not actually changed
 				else
+					add_bookmarks (l_source)
 					if entry_editable (lt_entry, False) then
 						if attached system_of_conf_notable (conf_notable) as lt_system then
 							if attached lt_entry.twin as lt_new_entry then
@@ -546,7 +547,7 @@ invariant
 	conf_notable_is_valid: valid_notable (conf_notable)
 
 note
-	copyright: "Copyright (c) 1984-2014, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

@@ -573,6 +573,27 @@ feature {NONE} -- Item callbacks
 		do
 		end
 
+feature {ES_EIS_COMPONENT_VIEW} -- Operation
+
+	add_bookmarks (a_source: STRING_32)
+			-- Add bookmarks on the given source file
+		require
+			a_source_not_void: a_source /= Void
+		local
+			l_document_analyzer: ES_EIS_DOCUMENT_ANALYZER
+		do
+			if a_source.ends_with (".docx") then
+				-- Microsoft office document treatment
+				create {ES_EIS_MICROSOFT_WORD_DOCUMENT_ANALYZER} l_document_analyzer.make (a_source)
+				l_document_analyzer.analyze
+
+			elseif a_source.ends_with (".odt") then
+				-- Open Document Text treatment
+				create {ES_EIS_OPEN_DOCUMENT_ANALYZER} l_document_analyzer.make (a_source)
+				l_document_analyzer.analyze
+			end
+		end
+
 feature {ES_EIS_COMPONENT_VIEW} -- Access
 
 	component: G

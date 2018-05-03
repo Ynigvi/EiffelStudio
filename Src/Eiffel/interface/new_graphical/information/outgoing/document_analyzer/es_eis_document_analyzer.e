@@ -18,42 +18,54 @@ feature -- Compressed files manipulations
 
 	zip
 			-- Compress a file and rename it
+		local
+			l_directory_path: STRING
+			l_directory: DIRECTORY
 		do
-			zip_call (file_path.to_c)
+			l_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
+			zip_call (l_directory_path.to_c, file_path.to_c)
+			create l_directory.make_with_name (l_directory_path)
+			if l_directory.exists then
+				l_directory.recursive_delete
+			end
 		end
 
-	zip_call (a_file_path: ANY)
+	zip_call (a_directory_path: ANY; a_zip_file_path: ANY)
 			-- External call to linux zip command.
 			-- Should be remplace by a multiplatform zip
 			-- in future.
 		external
-			"C inline use <stdlib.h>"
+			"C inline use %"minizip.h%""
 		alias
 			"{
-				char* cmd = malloc(sizeof (char) * (38 + strlen ((char*) *$a_file_path)));
-				sprintf(cmd, "cd ~/tmp_doc && zip -r \"%s\" *", (char*) *$a_file_path);
-				printf("%s", cmd);
-				system (cmd);
-			}"
+				zip_folder((char*) *$a_directory_path, (char*) *$a_zip_file_path);
+			 }"
 		end
 
 	unzip
 			-- Uncompress a file in order to be able to parse it
+		local
+			l_directory_path: STRING
+			l_directory: DIRECTORY
 		do
-			unzip_call (file_path.to_c)
+			l_directory_path := "/home/ynigvi/test_zip_eiffel/test_odt"
+			create l_directory.make_with_name (l_directory_path)
+			if l_directory.exists then
+				l_directory.recursive_delete
+			end
+			l_directory.create_dir
+			unzip_call (file_path.to_c, l_directory_path.to_c)
 		end
 
-	unzip_call (a_file_path: ANY)
+	unzip_call (a_zip_file_path: ANY; a_directory_path: ANY)
 			-- External call to linux unzip command.
 			-- Should be remplace by a multiplatform unzip
 			-- in future.
 		external
-			"C inline use <stdlib.h>"
+			"C inline use %"miniunz.h%""
 		alias
 			"{
-				char* cmd = malloc(sizeof (char) * (25 + strlen ((char*) *$a_file_path)));
-				sprintf(cmd, "unzip -u \"%s\" -d ~/tmp_doc", (char*) *$a_file_path);
-				system (cmd);
+				unzip_folder((char*) *$a_zip_file_path, (char*) *$a_directory_path);
 			}"
 		end
 

@@ -494,7 +494,7 @@ feature {NONE} -- Target token
 			end
 		end
 
-feature {NONE} -- Destination token override
+feature {NONE} -- Destination token
 
 	destination_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
 			-- List item of destination from an EIS entry.
@@ -510,6 +510,7 @@ feature {NONE} -- Destination token override
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
 			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
 			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+			l_checkbox: EV_GRID_CHECKABLE_LABEL_ITEM
 		do
 			if a_editable then
 				create l_list.make (0)
@@ -863,50 +864,45 @@ feature {NONE} -- Callbacks
 			a_item_not_void: a_item /= Void
 			a_item_not_void: a_grid_item /= Void
 		local
-			l_assertion: TAGGED_AS
-			l_classi: CLASS_I
 			l_done: BOOLEAN
 			l_new_entry: EIS_ENTRY
-			l_current_feature, l_feature: E_FEATURE
-			l_current_class: CLASS_I
-			l_class_modifier: ES_EIS_CLASS_MODIFIER
-			l_feature_modifier: ES_EIS_FEATURE_MODIFIER
-			l_grid_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
-			l_eis_entry: EIS_ENTRY
 		do
 			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
 				if entry_editable (lt_entry, False) then
-					l_assertion ?= a_item.data
-					if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
-						if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
-							l_new_entry := lt_new_entry
+					if attached {TAGGED_AS} a_item.data as lt_assertion then
+						if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
+							if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
+								l_new_entry := lt_new_entry
+							end
+							l_new_entry.set_destination (id_solution.id_of_assertion (lt_feature, lt_assertion))
+							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
+							l_done := True
+						elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
+							if attached lt_entry.twin as lt_new_entry1 then
+								l_new_entry := lt_new_entry1
+							end
+							l_new_entry.set_destination (id_solution.id_of_invariant (lt_class.config_class, lt_assertion))
+							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
+							l_done := True
 						end
-						l_new_entry.set_destination (id_solution.id_of_assertion (lt_feature, l_assertion))
-						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
-						l_done := True
-					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
-						if attached lt_entry.twin as lt_new_entry1 then
-							l_new_entry := lt_new_entry1
-						end
-						l_new_entry.set_destination (l_assertion.tag.string_value_32)
-						modify_entry_in_class (lt_entry, l_new_entry, lt_class)
-						l_done := True
-					end
+
 						-- Modify the destination in the entry when the modification is done
 					if l_done then
-						storage.deregister_entry (lt_entry, component_id)
-						if l_assertion /= Void then
-							lt_entry.set_destination (l_assertion.tag.string_value_32)
-						else
-							lt_entry.set_destination (Void)
+							storage.deregister_entry (lt_entry, component_id)
+							if lt_assertion /= Void then
+								lt_entry.set_destination (lt_assertion.tag.string_value_32)
+							else
+								lt_entry.set_destination (Void)
+							end
+							storage.register_entry (lt_entry, component_id, class_i.date)
 						end
-						storage.register_entry (lt_entry, component_id, class_i.date)
 					end
 				end
 
 				Result := l_done
 
 				if Result then
+					eis_grid.set_item (column_destination, a_grid_item.row.index, on_item_display (column_destination, a_grid_item.row.index))
 					if lt_entry.override then
 							-- Refresh the list to show/hide auto entries.
 							-- We cannot `rebuild_and_refresh_grid' directly, as it cleans up the grid

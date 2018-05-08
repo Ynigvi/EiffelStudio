@@ -565,11 +565,6 @@ feature {NONE} -- Item callbacks
 		do
 		end
 
-	on_destination_changed (a_item: EV_GRID_ITEM)
-			-- On source changed
-		do
-		end
-
 	on_override_changed (a_item: EV_GRID_CHECKABLE_LABEL_ITEM)
 			-- On override changed
 		do
@@ -953,6 +948,9 @@ feature {NONE} -- Grid items
 		local
 			l_destination: STRING_32
 			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
+			l_feature: E_FEATURE
+			l_routine: ROUTINE_AS
+			l_type: NATURAL
 		do
 			l_destination := a_entry.destination
 			if l_destination = Void then
@@ -962,7 +960,7 @@ feature {NONE} -- Grid items
 				create l_editable_item.make_with_text (l_destination)
 				l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
 				l_editable_item.set_text_validation_agent (agent is_destination_valid (?, l_editable_item))
-				l_editable_item.deactivate_actions.extend (agent on_destination_changed (l_editable_item))
+				-- l_editable_item.deactivate_actions.extend (agent on_destination_changed (?, l_editable_item))
 				l_editable_item.set_key_press_action (agent tab_to_next)
 				Result := l_editable_item
 			else

@@ -20,6 +20,7 @@ inherit
 			component_editable,
 			class_editor_token_for_target,
 			feature_editor_token_for_target,
+			destination_item_from_eis_entry,
 			on_name_changed,
 			on_protocol_changed,
 			on_source_changed,
@@ -493,6 +494,105 @@ feature {NONE} -- Target token
 			end
 		end
 
+feature {NONE} -- Destination token override
+
+	destination_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
+			-- List item of destination from an EIS entry.
+		local
+			l_destination: STRING_32
+			l_editable_item: EB_GRID_LISTABLE_CHOICE_ITEM
+			l_feature: E_FEATURE
+			l_routine: ROUTINE_AS
+			l_classc: CLASS_C
+			l_type: NATURAL
+			l_line: EIFFEL_EDITOR_LINE
+			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
+			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+		do
+			if a_editable then
+				create l_list.make (0)
+				l_editable_item := new_listable_item
+				l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
+				l_type := id_solution.most_possible_type_of_id (a_entry.target_id)
+				if l_type = id_solution.feature_type then
+					l_feature := id_solution.feature_of_id (a_entry.target_id)
+					if l_feature /= Void then
+						l_routine ?= l_feature.ast.body.content
+						if attached l_routine.precondition as lt_precondition then
+							from
+								lt_precondition.assertions.start
+							until
+								lt_precondition.assertions.off
+							loop
+								l_destination := lt_precondition.assertions.item.tag.string_value_32
+								token_writer.new_line
+								token_writer.add (l_destination)
+								l_line := token_writer.last_line
+								create l_e_com.make (l_line.content, 0)
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+								l_item_item.set_data (lt_precondition.assertions.item)
+								l_list.extend (l_item_item)
+								l_editable_item.set_list_item (l_item_item)
+								lt_precondition.assertions.forth
+							end
+						end
+
+						if attached l_routine.postcondition as lt_postcondition then
+							from
+								lt_postcondition.assertions.start
+							until
+								lt_postcondition.assertions.off
+							loop
+								l_destination := lt_postcondition.assertions.item.tag.string_value_32
+								token_writer.new_line
+								token_writer.add (l_destination)
+								l_line := token_writer.last_line
+								create l_e_com.make (l_line.content, 0)
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+								l_item_item.set_data (lt_postcondition.assertions.item)
+								l_list.extend (l_item_item)
+								l_editable_item.set_list_item (l_item_item)
+								lt_postcondition.assertions.forth
+							end
+						end
+					end
+				elseif l_type = id_solution.class_type then
+					l_classc := class_i.compiled_class
+					if attached l_classc.invariant_ast as lt_invariants then
+						from
+							lt_invariants.assertion_list.start
+						until
+							lt_invariants.assertion_list.off
+						loop
+							l_destination := lt_invariants.assertion_list.item.tag.string_value_32
+							token_writer.new_line
+							token_writer.add (l_destination)
+							l_line := token_writer.last_line
+							create l_e_com.make (l_line.content, 0)
+							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+							l_item_item.set_data (lt_invariants.assertion_list.item)
+							l_list.extend (l_item_item)
+							l_editable_item.set_list_item (l_item_item)
+							lt_invariants.assertion_list.forth
+						end
+					end
+				end
+				if l_destination = Void then
+					create l_destination.make_empty
+				end
+				l_editable_item.set_item_components (l_list)
+
+				Result := l_editable_item
+				if l_editable_item.item_components /= Void and then l_editable_item.item_components.index_set.count > 1 then
+					l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
+					l_editable_item.set_selection_changing_action (agent on_destination_changed (?, l_editable_item))
+				end
+			else
+				create Result
+			end
+		end
+
 feature {NONE} -- Implementation
 
 	new_extractor: ES_EIS_EXTRACTOR
@@ -736,6 +836,71 @@ feature {NONE} -- Callbacks
 							lt_entry.set_source (l_source)
 							storage.register_entry (lt_entry, component_id, class_i.date)
 						end
+					end
+				end
+			end
+		end
+
+	on_destination_changed (a_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_grid_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
+			-- On destination changed
+			-- We modify neither the referenced EIS entry when the modification is done.
+		require
+			a_item_not_void: a_item /= Void
+			a_item_not_void: a_grid_item /= Void
+		local
+			l_clause: TAGGED_AS
+			l_classi: CLASS_I
+			l_done: BOOLEAN
+			l_new_entry: EIS_ENTRY
+			l_current_feature, l_feature: E_FEATURE
+			l_current_class: CLASS_I
+			l_class_modifier: ES_EIS_CLASS_MODIFIER
+			l_feature_modifier: ES_EIS_FEATURE_MODIFIER
+			l_grid_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+			l_eis_entry: EIS_ENTRY
+		do
+			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
+				if entry_editable (lt_entry, False) then
+					l_clause ?= a_item.data
+					if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
+						if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
+							l_new_entry := lt_new_entry
+						end
+						l_new_entry.set_destination (l_clause.tag.string_value_32)
+						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
+						l_done := True
+					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
+						if attached lt_entry.twin as lt_new_entry1 then
+							l_new_entry := lt_new_entry1
+						end
+						l_new_entry.set_destination (l_clause.tag.string_value_32)
+						modify_entry_in_class (lt_entry, l_new_entry, lt_class)
+						l_done := True
+					end
+						-- Modify the destination in the entry when the modification is done
+					if l_done then
+						storage.deregister_entry (lt_entry, component_id)
+						if l_clause /= Void then
+							lt_entry.set_destination (l_clause.tag.string_value_32)
+						else
+							lt_entry.set_destination (Void)
+						end
+						storage.register_entry (lt_entry, component_id, class_i.date)
+					end
+				end
+
+				Result := l_done
+
+				if Result then
+					if lt_entry.override then
+							-- Refresh the list to show/hide auto entries.
+							-- We cannot `rebuild_and_refresh_grid' directly, as it cleans up the grid
+							-- in the call of `deactivate' of {EB_GRID_LISTABLE_CHOICE_ITEM},
+							-- which causes problems.
+						ev_application.do_once_on_idle (agent rebuild_and_refresh_grid)
+					else
+							-- Refresh Override item, as it might be changed when changing from class to feature or vice versa.
+						eis_grid.set_item (column_override, a_grid_item.row.index, on_item_display (column_override, a_grid_item.row.index))
 					end
 				end
 			end

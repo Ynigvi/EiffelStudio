@@ -18,6 +18,8 @@ feature -- Access
 
 	source_string: STRING_32 = "src"
 
+	destination_string: STRING_32 = "dest"
+
 	tag_string: STRING_32 = "tag"
 
 	override_string: STRING_32 = "override"
@@ -60,7 +62,7 @@ feature -- Built in variables
 	;
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

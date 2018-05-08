@@ -27,6 +27,7 @@ feature {NONE} -- Implementation
 											name: STRING_32;
 											protocol: STRING_32;
 											source: STRING_32;
+											destination: STRING_32;
 											tags: ARRAYED_LIST [STRING_32];
 											id: STRING;
 											parameters: STRING_TABLE [STRING_32];
@@ -48,6 +49,8 @@ feature {NONE} -- Implementation
 				a_eis_tuple.protocol := a_value
 			elseif a_eis_tuple.source = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.source_string) then
 				a_eis_tuple.source := a_value
+			elseif a_eis_tuple.destination = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
+				a_eis_tuple.destination := a_value
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.tag_string) then
 						-- To add more tags support.
 				a_eis_tuple.tags := parse_tags (a_value)
@@ -76,6 +79,7 @@ feature {NONE} -- Implementation
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
+							destination: STRING_32;
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
 							parameters: STRING_TABLE [STRING_32];
@@ -89,7 +93,7 @@ feature {NONE} -- Implementation
 				l_index_list := a_index.index_list
 				create l_parameters.make (3)
 				create l_tags.make (2)
-				l_entry_tuple := [l_default, l_default, l_default, l_tags, a_eis_id, l_parameters, False]
+				l_entry_tuple := [l_default, l_default, l_default, l_default, l_tags, a_eis_id, l_parameters, False]
 				from
 					l_index_list.start
 				until
@@ -154,7 +158,7 @@ feature {NONE} -- Implementation
 				if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 					l_entry_tuple.parameters := Void
 				end
-				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
+				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
 				Result.set_override (l_entry_tuple.override)
 				Result.set_source_pos ([l_source_pos, l_source_len])
 			end
@@ -172,6 +176,7 @@ feature {NONE} -- Implementation
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
+							destination: STRING_32;
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
 							parameters: STRING_TABLE [STRING_32];
@@ -216,7 +221,7 @@ feature {NONE} -- Implementation
 					if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 						l_entry_tuple.parameters := Void
 					end
-					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
+					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
 				end
 			end
 		end
@@ -360,7 +365,7 @@ feature {NONE} -- Implemetation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2014, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

@@ -176,7 +176,7 @@ feature {NONE} -- Basic operations
 		do
 			l_auto_entry := auto_entry (class_i.target)
 			if l_auto_entry /= Void and then l_auto_entry.enabled then
-				create l_entry.make (class_i.name, Void, l_auto_entry.src, Void, eis_class_id, Void)
+				create l_entry.make (class_i.name, Void, l_auto_entry.src, Void, Void, eis_class_id, Void)
 				eis_entries.force (l_entry)
 			end
 		end
@@ -330,7 +330,7 @@ feature {NONE} -- Implementation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2013, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

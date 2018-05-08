@@ -52,6 +52,14 @@ feature -- Operation
 					l_output.append (quoted_string ({ES_EIS_TOKENS}.source_string + {ES_EIS_TOKENS}.value_assignment + l_source))
 					l_comma_needed := True
 				end
+				if attached a_entry.destination as l_destination and then not l_destination.is_empty then
+					if l_comma_needed then
+						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
+						l_output.append_character ({ES_EIS_TOKENS}.space)
+					end
+					l_output.append (quoted_string ({ES_EIS_TOKENS}.destination_string + {ES_EIS_TOKENS}.value_assignment + l_destination))
+					l_comma_needed := True
+				end
 				if a_entry.tags /= Void and then not a_entry.tags.is_empty then
 					if l_comma_needed then
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
@@ -233,7 +241,7 @@ feature {NONE} -- Implementation
 
 
 note
-	copyright: "Copyright (c) 1984-2013, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

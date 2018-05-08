@@ -18,7 +18,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_tags: like tags; a_id: like target_id; a_parameters: like parameters)
+	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destination; a_tags: like tags; a_id: like target_id; a_parameters: like parameters)
 			-- Initialization
 		require
 			a_id_not_void: a_id /= Void
@@ -26,12 +26,14 @@ feature {NONE} -- Initialization
 			name_valid: a_name /= Void implies valid_attribute (a_name)
 			protocol_valid: a_protocol /= Void implies valid_attribute (a_protocol)
 			source_valid: a_source /= Void implies valid_attribute (a_source)
+			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
 			tags_valid: a_tags /= Void implies valid_tags (a_tags)
 			parameters_valid: a_parameters /= Void implies valid_parameters (a_parameters)
 		do
 			name := a_name
 			protocol := a_protocol
 			source := a_source
+			destination := a_destination
 			tags := a_tags
 			target_id := a_id
 			parameters := a_parameters
@@ -39,6 +41,7 @@ feature {NONE} -- Initialization
 			name_set: name = a_name
 			protocol_set: protocol = a_protocol
 			source_set: source = a_source
+			destination_set: destination = a_destination
 			tags_set: tags = a_tags
 			id_set: target_id = a_id
 			parameters_set: parameters = a_parameters
@@ -95,6 +98,22 @@ feature {ES_EIS_COMPONENT_VIEW} -- Element change
 			end
 		ensure
 			source_set: source = a_source
+		end
+
+	set_destination (a_destination: like destination)
+		require
+			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+		local
+
+			l_destination: like destination
+		do
+			l_destination := destination
+			destination := a_destination
+			if not same_string_attribute (l_destination, a_destination) then
+				reset_fingerprint
+			end
+		ensure
+			destination_set: destination = a_destination
 		end
 
 	set_tags (a_tags: like tags)
@@ -196,6 +215,8 @@ feature -- Access
 
 	tags: detachable ARRAYED_LIST [STRING_32] assign set_tags
 			-- Tags of the entry
+
+	destination: detachable STRING_32 assign set_destination
 
 	target_id: STRING
 			-- Id of the entry (from EB_SHARED_ID_SOLUTION)
@@ -363,7 +384,7 @@ invariant
 	id_not_void: target_id /= Void
 
 note
-	copyright: "Copyright (c) 1984-2014, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

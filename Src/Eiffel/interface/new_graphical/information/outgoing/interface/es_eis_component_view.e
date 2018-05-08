@@ -340,6 +340,7 @@ feature {NONE} -- Initialization
 			l_grid.set_column_count_to (numbers_of_column)
 			l_grid.set_auto_resizing_column (column_target, True)
 			l_grid.set_auto_resizing_column (column_name, True)
+			l_grid.set_auto_resizing_column (column_destination, True)
 			l_grid.set_auto_resizing_column (column_protocol, True)
 			l_grid.set_auto_resizing_column (column_source, True)
 
@@ -358,6 +359,10 @@ feature {NONE} -- Initialization
 			l_column := l_grid.column (column_source)
 			l_grid.column (column_source).set_title (interface_names.l_source)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_source, ?, ?, ?, ?, ?, ?, ?, ?))
+
+			l_column := l_grid.column (column_destination)
+			l_grid.column (column_destination).set_title (interface_names.l_destination)
+			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_destination, ?, ?, ?, ?, ?, ?, ?, ?))
 
 			l_column := l_grid.column (column_tags)
 			l_grid.column (column_tags).set_title (interface_names.l_tags)
@@ -498,6 +503,8 @@ feature {NONE} -- Events
 					Result := protocol_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_source then
 					Result := source_item_from_eis_entry (l_eis_entry, l_editable)
+				when column_destination then
+					Result := destination_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_tags then
 						-- Tags
 					Result := tags_item_from_eis_entry (l_eis_entry, l_editable)
@@ -554,6 +561,11 @@ feature {NONE} -- Item callbacks
 		end
 
 	on_source_changed (a_value: READABLE_STRING_32; a_item: EV_GRID_ITEM)
+			-- On source changed
+		do
+		end
+
+	on_destination_changed (a_value: STRING_32; a_item: EV_GRID_ITEM)
 			-- On source changed
 		do
 		end
@@ -783,6 +795,14 @@ feature {NONE} -- Validation
 			end
 		end
 
+	is_destination_valid (a_destination: STRING_32; a_item: EV_GRID_EDITABLE_ITEM): BOOLEAN
+			-- Can `a_destination' be changed in `a_item'?
+		do
+			if attached {EIS_ENTRY} a_item.row.data as lt_entry then
+				Result := entry_editable (lt_entry, False)
+			end
+		end
+
 	is_tags_valid (a_tags: STRING_32; a_item: EV_GRID_EDITABLE_ITEM): BOOLEAN
 			-- Can `a_tags' be changed in `a_item'?
 		do
@@ -925,6 +945,32 @@ feature {NONE} -- Grid items
 		ensure
 			Result_not_void: Result /= Void
 		end
+
+	destination_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
+				-- Grid item of destination from an EIS entry.
+			require
+				a_entry_not_void: a_entry /= Void
+			local
+				l_destination: STRING_32
+				l_file_prop: ES_EIS_FILE_PROPERTY
+			do
+				l_destination := a_entry.destination
+				if l_destination = Void then
+					create l_destination.make_empty
+				end
+				if a_editable then
+					create l_file_prop.make (once "", variable_provider_from_entry (a_entry))
+					l_file_prop.set_value (l_destination)
+					l_file_prop.change_value_actions.extend (agent on_destination_changed (?, l_file_prop))
+					l_file_prop.set_text_validation_agent (agent is_destination_valid (?, l_file_prop))
+					l_file_prop.key_press_actions.extend (agent tab_to_next)
+					Result := l_file_prop
+				else
+					create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_destination)
+				end
+			ensure
+				Result_not_void: Result /= Void
+			end
 
 	tags_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
 			-- Grid item of tags from an EIS entry.
@@ -1273,12 +1319,14 @@ feature {NONE} -- Column constants
 
 	column_target: INTEGER = 1
 	column_source: INTEGER = 2
-	column_parameters: INTEGER = 3
-	column_protocol: INTEGER = 4
-	column_name: INTEGER = 5
-	column_tags: INTEGER = 6
-	column_override: INTEGER = 7
-	numbers_of_column: INTEGER = 7;
+	column_destination: INTEGER = 3
+	column_parameters: INTEGER = 4
+	column_protocol: INTEGER = 5
+	column_name: INTEGER = 6
+	column_tags: INTEGER = 7
+	column_override: INTEGER = 8
+	numbers_of_column: INTEGER = 8;
+
 
 invariant
 	component_not_void: component /= Void

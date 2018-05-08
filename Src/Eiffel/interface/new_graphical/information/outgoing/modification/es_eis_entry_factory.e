@@ -13,7 +13,7 @@ feature -- Access
 		require
 			a_id_not_void: a_id /= Void
 		do
-			create Result.make (default_name, default_protocol, default_source, Void, a_id, Void)
+			create Result.make (default_name, default_protocol, default_source, Void, Void, a_id, Void)
 		end
 
 feature {NONE} -- Access
@@ -24,7 +24,7 @@ feature {NONE} -- Access
 			-- Default source
 
 note
-	copyright: "Copyright (c) 1984-2013, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license: "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

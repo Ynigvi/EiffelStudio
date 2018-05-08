@@ -565,7 +565,7 @@ feature {NONE} -- Item callbacks
 		do
 		end
 
-	on_destination_changed (a_value: STRING_32; a_item: EV_GRID_ITEM)
+	on_destination_changed (a_item: EV_GRID_ITEM)
 			-- On source changed
 		do
 		end
@@ -947,30 +947,30 @@ feature {NONE} -- Grid items
 		end
 
 	destination_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
-				-- Grid item of destination from an EIS entry.
-			require
-				a_entry_not_void: a_entry /= Void
-			local
-				l_destination: STRING_32
-				l_file_prop: ES_EIS_FILE_PROPERTY
-			do
-				l_destination := a_entry.destination
-				if l_destination = Void then
-					create l_destination.make_empty
-				end
-				if a_editable then
-					create l_file_prop.make (once "", variable_provider_from_entry (a_entry))
-					l_file_prop.set_value (l_destination)
-					l_file_prop.change_value_actions.extend (agent on_destination_changed (?, l_file_prop))
-					l_file_prop.set_text_validation_agent (agent is_destination_valid (?, l_file_prop))
-					l_file_prop.key_press_actions.extend (agent tab_to_next)
-					Result := l_file_prop
-				else
-					create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_destination)
-				end
-			ensure
-				Result_not_void: Result /= Void
+			-- Grid item of destination from an EIS entry.
+		require
+			a_entry_not_void: a_entry /= Void
+		local
+			l_destination: STRING_32
+			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
+		do
+			l_destination := a_entry.destination
+			if l_destination = Void then
+				create l_destination.make_empty
 			end
+			if a_editable then
+				create l_editable_item.make_with_text (l_destination)
+				l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
+				l_editable_item.set_text_validation_agent (agent is_destination_valid (?, l_editable_item))
+				l_editable_item.deactivate_actions.extend (agent on_destination_changed (l_editable_item))
+				l_editable_item.set_key_press_action (agent tab_to_next)
+				Result := l_editable_item
+			else
+				create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_destination)
+			end
+		ensure
+			Result_not_void: Result /= Void
+		end
 
 	tags_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
 			-- Grid item of tags from an EIS entry.

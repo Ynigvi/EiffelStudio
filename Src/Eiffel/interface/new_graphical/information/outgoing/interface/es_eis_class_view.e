@@ -504,6 +504,7 @@ feature {NONE} -- Destination token override
 			l_feature: E_FEATURE
 			l_routine: ROUTINE_AS
 			l_classc: CLASS_C
+			l_tag: TAGGED_AS
 			l_type: NATURAL
 			l_line: EIFFEL_EDITOR_LINE
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
@@ -515,6 +516,14 @@ feature {NONE} -- Destination token override
 				l_editable_item := new_listable_item
 				l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
 				l_type := id_solution.most_possible_type_of_id (a_entry.target_id)
+				l_tag := id_solution.assertion_of_id (a_entry.destination)
+				if l_tag = Void then
+					if attached {E_FEATURE} id_solution.feature_of_id (a_entry.target_id) as lt_feature then
+						modify_entry_in_feature (a_entry, a_entry, lt_feature)
+					elseif attached {CLASS_I} id_solution.class_of_id (a_entry.target_id) as lt_class then
+						modify_entry_in_class (a_entry, a_entry, lt_class)
+					end
+				end
 				if l_type = id_solution.feature_type then
 					l_feature := id_solution.feature_of_id (a_entry.target_id)
 					if l_feature /= Void then
@@ -533,7 +542,9 @@ feature {NONE} -- Destination token override
 								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
 								l_item_item.set_data (lt_precondition.assertions.item)
 								l_list.extend (l_item_item)
-								l_editable_item.set_list_item (l_item_item)
+								if l_tag /= Void and then lt_precondition.assertions.item.is_equivalent (l_tag) then
+									l_editable_item.set_list_item (l_item_item)
+								end
 								lt_precondition.assertions.forth
 							end
 						end
@@ -552,7 +563,9 @@ feature {NONE} -- Destination token override
 								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
 								l_item_item.set_data (lt_postcondition.assertions.item)
 								l_list.extend (l_item_item)
-								l_editable_item.set_list_item (l_item_item)
+								if l_tag /= Void and then lt_postcondition.assertions.item.is_equivalent (l_tag) then
+									l_editable_item.set_list_item (l_item_item)
+								end
 								lt_postcondition.assertions.forth
 							end
 						end
@@ -573,7 +586,9 @@ feature {NONE} -- Destination token override
 							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
 							l_item_item.set_data (lt_invariants.assertion_list.item)
 							l_list.extend (l_item_item)
-							l_editable_item.set_list_item (l_item_item)
+							if l_tag /= Void and then lt_invariants.assertion_list.item.is_equivalent (l_tag) then
+								l_editable_item.set_list_item (l_item_item)
+							end
 							lt_invariants.assertion_list.forth
 						end
 					end
@@ -866,7 +881,7 @@ feature {NONE} -- Callbacks
 						if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
 							l_new_entry := lt_new_entry
 						end
-						l_new_entry.set_destination (l_assertion.tag.string_value_32)
+						l_new_entry.set_destination (id_solution.id_of_assertion (lt_feature, l_assertion))
 						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
 						l_done := True
 					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then

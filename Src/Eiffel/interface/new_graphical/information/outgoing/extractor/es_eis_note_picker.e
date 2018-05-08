@@ -158,6 +158,11 @@ feature {NONE} -- Implementation
 				if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 					l_entry_tuple.parameters := Void
 				end
+				if l_entry_tuple.destination /= Void then
+					l_entry_tuple.destination := id_solution.id_of_string_tag (l_entry_tuple.id, l_entry_tuple.destination)
+				else
+					l_entry_tuple.destination := ""
+				end
 				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
 				Result.set_override (l_entry_tuple.override)
 				Result.set_source_pos ([l_source_pos, l_source_len])

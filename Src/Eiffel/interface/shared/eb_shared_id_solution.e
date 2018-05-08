@@ -324,8 +324,7 @@ feature -- Access (Assertion)
 						last_feature_name := l_feature_name
 						if l_class_c /= Void and then l_class_c.has_feature_table then
 							l_routine ?= l_class_c.feature_with_name_32 (l_feature_name).ast.body.content
-							if l_routine.has_precondition and then
-								attached l_routine.precondition as l_preconditions then
+							if attached l_routine.precondition as l_preconditions then
 								from
 								l_preconditions.assertions.start
 								until
@@ -337,8 +336,7 @@ feature -- Access (Assertion)
 									l_preconditions.assertions.forth
 								end
 							end
-							if l_routine.has_postcondition and then
-								attached l_routine.postcondition as l_postconditions then
+							if attached l_routine.postcondition as l_postconditions then
 								from
 								l_postconditions.assertions.start
 								until
@@ -384,6 +382,35 @@ feature -- Access (Assertion)
 			Result.append ("invariant")
 			Result.append (name_sep)
 			Result.append (encode (a_assertion.tag.name_32))
+		end
+
+	id_of_string_tag (a_id: STRING; a_tag: STRING): STRING
+		require
+			a_id_not_void: a_id /= Void
+			a_tag_not_void: a_tag /= Void
+		local
+			l_temp_id: STRING
+		do
+			if most_possible_type_of_id (a_id) = class_type then
+				create l_temp_id.make_from_string(a_id)
+				l_temp_id.append (name_sep)
+				l_temp_id.append ("invariant")
+				l_temp_id.append (name_sep)
+				l_temp_id.append (encode (a_tag))
+			elseif most_possible_type_of_id (a_id) = feature_type then
+				create l_temp_id.make_from_string(a_id)
+				l_temp_id.append (name_sep)
+				l_temp_id.append (encode (a_tag))
+			end
+			Result := ""
+
+			if l_temp_id /= Void then
+				if assertion_of_id (l_temp_id) /= Void then
+					Result := l_temp_id
+				else
+					Result := ""
+				end
+			end
 		end
 
 feature  -- Element Change
@@ -615,6 +642,8 @@ feature -- Querry
 				Result := class_type
 			elseif l_count = feature_id_sections then
 				Result := feature_type
+			elseif l_count = assertion_id_sections then
+				Result := assertion_type
 			else
 			end
 		end
@@ -637,6 +666,7 @@ feature -- ID type
 	folder_type: NATURAL = 3
 	class_type: NATURAL = 4
 	feature_type: NATURAL = 5
+	assertion_type: NATURAL = 6
 	min_type: NATURAL once Result := target_type end
 	max_type: NATURAL once Result := feature_type end
 

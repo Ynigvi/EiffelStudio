@@ -57,7 +57,7 @@ feature -- Operation
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
 						l_output.append_character ({ES_EIS_TOKENS}.space)
 					end
-					l_output.append (quoted_string ({ES_EIS_TOKENS}.destination_string + {ES_EIS_TOKENS}.value_assignment + l_destination))
+					l_output.append (quoted_string ({ES_EIS_TOKENS}.destination_string + {ES_EIS_TOKENS}.value_assignment + id_solution.assertion_of_id (l_destination).tag.name_32))
 					l_comma_needed := True
 				end
 				if a_entry.tags /= Void and then not a_entry.tags.is_empty then

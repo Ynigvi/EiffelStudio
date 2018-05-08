@@ -18,7 +18,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destination; a_tags: like tags; a_id: like target_id; a_parameters: like parameters)
+	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destinations; a_tags: like tags; a_id: like target_id; a_parameters: like parameters)
 			-- Initialization
 		require
 			a_id_not_void: a_id /= Void
@@ -26,14 +26,14 @@ feature {NONE} -- Initialization
 			name_valid: a_name /= Void implies valid_attribute (a_name)
 			protocol_valid: a_protocol /= Void implies valid_attribute (a_protocol)
 			source_valid: a_source /= Void implies valid_attribute (a_source)
-			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+			destination_valid: a_destination /= Void implies valid_tags (a_destination)
 			tags_valid: a_tags /= Void implies valid_tags (a_tags)
 			parameters_valid: a_parameters /= Void implies valid_parameters (a_parameters)
 		do
 			name := a_name
 			protocol := a_protocol
 			source := a_source
-			destination := a_destination
+			destinations := a_destination
 			tags := a_tags
 			target_id := a_id
 			parameters := a_parameters
@@ -41,7 +41,7 @@ feature {NONE} -- Initialization
 			name_set: name = a_name
 			protocol_set: protocol = a_protocol
 			source_set: source = a_source
-			destination_set: destination = a_destination
+			destination_set: destinations = a_destination
 			tags_set: tags = a_tags
 			id_set: target_id = a_id
 			parameters_set: parameters = a_parameters
@@ -100,20 +100,55 @@ feature {ES_EIS_COMPONENT_VIEW} -- Element change
 			source_set: source = a_source
 		end
 
-	set_destination (a_destination: like destination)
+	set_destinations (a_destinations: like destinations)
 		require
-			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+			destinations_valid: a_destinations /= Void implies valid_tags (a_destinations)
 		local
 
-			l_destination: like destination
+			l_destinations: like destinations
 		do
-			l_destination := destination
-			destination := a_destination
-			if not same_string_attribute (l_destination, a_destination) then
+			l_destinations := destinations
+			destinations := a_destinations
+			if l_destinations /= a_destinations then
 				reset_fingerprint
 			end
 		ensure
-			destination_set: destination = a_destination
+			destinations_set: destinations = a_destinations
+		end
+
+	add_destination (a_destination: STRING_32): BOOLEAN
+		require
+			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+		do
+			if destinations = Void then
+				destinations.make (1)
+			end
+			if destinations.has (a_destination) then
+				Result := false
+			else
+				destinations.extend (a_destination)
+				Result := true
+			end
+		ensure
+			destination_in_list: destinations.has (a_destination)
+		end
+
+	remove_destination (a_destination: STRING_32): BOOLEAN
+		require
+			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+		local
+			l_index: INTEGER
+		do
+			l_index := destinations.index_of (a_destination, 0)
+			if l_index /= 0 then
+				destinations.move (l_index)
+				destinations.remove
+				Result := true
+			else
+				Result := false
+			end
+		ensure
+			destination_in_list: not destinations.has (a_destination)
 		end
 
 	set_tags (a_tags: like tags)
@@ -216,7 +251,8 @@ feature -- Access
 	tags: detachable ARRAYED_LIST [STRING_32] assign set_tags
 			-- Tags of the entry
 
-	destination: detachable STRING_32 assign set_destination
+	destinations: detachable ARRAYED_LIST [STRING_32] assign set_destinations
+			-- Fine grain destinations
 
 	target_id: STRING
 			-- Id of the entry (from EB_SHARED_ID_SOLUTION)

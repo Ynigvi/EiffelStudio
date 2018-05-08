@@ -27,7 +27,7 @@ feature {NONE} -- Implementation
 											name: STRING_32;
 											protocol: STRING_32;
 											source: STRING_32;
-											destination: STRING_32;
+											destination: ARRAYED_LIST [STRING_32];
 											tags: ARRAYED_LIST [STRING_32];
 											id: STRING;
 											parameters: STRING_TABLE [STRING_32];
@@ -50,7 +50,7 @@ feature {NONE} -- Implementation
 			elseif a_eis_tuple.source = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.source_string) then
 				a_eis_tuple.source := a_value
 			elseif a_eis_tuple.destination = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
-				a_eis_tuple.destination := a_value
+				a_eis_tuple.destination := parse_tags (a_value)
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.tag_string) then
 						-- To add more tags support.
 				a_eis_tuple.tags := parse_tags (a_value)
@@ -74,12 +74,13 @@ feature {NONE} -- Implementation
 			l_attribute_pair: STRING
 			l_parameters: STRING_TABLE [STRING_32]
 			l_tags: ARRAYED_LIST [STRING_32]
+			l_destinations: ARRAYED_LIST [STRING_32]
 
 			l_entry_tuple: TUPLE [
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
-							destination: STRING_32;
+							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
 							parameters: STRING_TABLE [STRING_32];
@@ -93,7 +94,8 @@ feature {NONE} -- Implementation
 				l_index_list := a_index.index_list
 				create l_parameters.make (3)
 				create l_tags.make (2)
-				l_entry_tuple := [l_default, l_default, l_default, l_default, l_tags, a_eis_id, l_parameters, False]
+				create l_destinations.make (2)
+				l_entry_tuple := [l_default, l_default, l_default, l_destinations, l_tags, a_eis_id, l_parameters, False]
 				from
 					l_index_list.start
 				until
@@ -159,9 +161,14 @@ feature {NONE} -- Implementation
 					l_entry_tuple.parameters := Void
 				end
 				if l_entry_tuple.destination /= Void then
-					l_entry_tuple.destination := id_solution.id_of_string_tag (l_entry_tuple.id, l_entry_tuple.destination)
-				else
-					l_entry_tuple.destination := ""
+					from
+						l_entry_tuple.destination.start
+					until
+						l_entry_tuple.destination.off
+					loop
+						l_entry_tuple.destination.item.make_from_string (id_solution.id_of_string_tag (l_entry_tuple.id, l_entry_tuple.destination.item))
+						l_entry_tuple.destination.forth
+					end
 				end
 				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
 				Result.set_override (l_entry_tuple.override)
@@ -181,7 +188,7 @@ feature {NONE} -- Implementation
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
-							destination: STRING_32;
+							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
 							parameters: STRING_TABLE [STRING_32];

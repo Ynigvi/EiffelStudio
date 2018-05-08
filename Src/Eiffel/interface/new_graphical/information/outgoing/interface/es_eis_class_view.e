@@ -510,14 +510,16 @@ feature {NONE} -- Destination token
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
 			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
 			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
-			l_checkbox: EV_GRID_CHECKABLE_LABEL_ITEM
 		do
 			if a_editable then
 				create l_list.make (0)
 				l_editable_item := new_listable_item
-				l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
 				l_type := id_solution.most_possible_type_of_id (a_entry.target_id)
-				l_tag := id_solution.assertion_of_id (a_entry.destination)
+				if a_entry.destinations /= Void and then not a_entry.destinations.is_empty then
+					l_tag := id_solution.assertion_of_id (a_entry.destinations.item)
+				else
+					l_tag := Void
+				end
 				if l_tag = Void then
 					if attached {E_FEATURE} id_solution.feature_of_id (a_entry.target_id) as lt_feature then
 						modify_entry_in_feature (a_entry, a_entry, lt_feature)
@@ -866,6 +868,7 @@ feature {NONE} -- Callbacks
 		local
 			l_done: BOOLEAN
 			l_new_entry: EIS_ENTRY
+			l_dest_changed: BOOLEAN
 		do
 			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
 				if entry_editable (lt_entry, False) then
@@ -874,14 +877,14 @@ feature {NONE} -- Callbacks
 							if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
 								l_new_entry := lt_new_entry
 							end
-							l_new_entry.set_destination (id_solution.id_of_assertion (lt_feature, lt_assertion))
+							l_dest_changed := l_new_entry.add_destination (id_solution.id_of_assertion (lt_feature, lt_assertion))
 							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
 							l_done := True
 						elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
 							if attached lt_entry.twin as lt_new_entry1 then
 								l_new_entry := lt_new_entry1
 							end
-							l_new_entry.set_destination (id_solution.id_of_invariant (lt_class.config_class, lt_assertion))
+							l_dest_changed := l_new_entry.add_destination (id_solution.id_of_invariant (lt_class.config_class, lt_assertion))
 							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
 							l_done := True
 						end
@@ -890,9 +893,9 @@ feature {NONE} -- Callbacks
 					if l_done then
 							storage.deregister_entry (lt_entry, component_id)
 							if lt_assertion /= Void then
-								lt_entry.set_destination (lt_assertion.tag.string_value_32)
+								l_dest_changed := lt_entry.add_destination (lt_assertion.tag.string_value_32)
 							else
-								lt_entry.set_destination (Void)
+								lt_entry.set_destinations (Void)
 							end
 							storage.register_entry (lt_entry, component_id, class_i.date)
 						end

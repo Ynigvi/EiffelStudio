@@ -52,12 +52,12 @@ feature -- Operation
 					l_output.append (quoted_string ({ES_EIS_TOKENS}.source_string + {ES_EIS_TOKENS}.value_assignment + l_source))
 					l_comma_needed := True
 				end
-				if attached a_entry.destination as l_destination and then not l_destination.is_empty then
+				if attached a_entry.destinations as l_destination and then not l_destination.is_empty then
 					if l_comma_needed then
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
 						l_output.append_character ({ES_EIS_TOKENS}.space)
 					end
-					l_output.append (quoted_string ({ES_EIS_TOKENS}.destination_string + {ES_EIS_TOKENS}.value_assignment + id_solution.assertion_of_id (l_destination).tag.name_32))
+					l_output.append (quoted_string ({ES_EIS_TOKENS}.destination_string + {ES_EIS_TOKENS}.value_assignment + assertions_as_code (a_entry)))
 					l_comma_needed := True
 				end
 				if a_entry.tags /= Void and then not a_entry.tags.is_empty then
@@ -104,6 +104,9 @@ feature -- Operation
 				if a_entry.tags /= Void and then not a_entry.tags.is_empty then
 					last_output_conf.add_attribute ({ES_EIS_TOKENS}.tag_string, tags_as_code (a_entry))
 				end
+				if a_entry.destinations /= Void and then not a_entry.destinations.is_empty then
+					last_output_conf.add_attribute ({ES_EIS_TOKENS}.destination_string, assertions_as_code (a_entry))
+				end
 				if attached a_entry.parameters as lt_parameters and then not lt_parameters.is_empty then
 					from
 						lt_parameters.start
@@ -149,6 +152,31 @@ feature -- Access
 
 	last_output_conf: CONF_NOTE_ELEMENT
 			-- Last output of conf note.
+
+	assertions_as_code (a_entry: EIS_ENTRY): STRING_32
+		require
+			a_entry_not_void: a_entry /= Void
+		do
+			create Result.make_empty
+			if attached a_entry.destinations as lt_destinations then
+				from
+					lt_destinations.start
+				until
+					lt_destinations.after
+				loop
+					if not lt_destinations.item.is_empty then
+						Result.append (id_solution.assertion_of_id (lt_destinations.item).tag.name_32)
+						if not lt_destinations.islast then
+							Result.append_character ({ES_EIS_TOKENS}.tag_separator)
+							Result.append_character ({ES_EIS_TOKENS}.space)
+						end
+					end
+					lt_destinations.forth
+				end
+			end
+		ensure
+			Result_not_void: Result /= Void
+		end
 
 	tags_as_code (a_entry: EIS_ENTRY): STRING_32
 			-- Tags as a string of code.

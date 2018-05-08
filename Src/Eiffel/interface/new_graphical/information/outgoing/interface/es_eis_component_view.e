@@ -946,25 +946,26 @@ feature {NONE} -- Grid items
 		require
 			a_entry_not_void: a_entry /= Void
 		local
-			l_destination: STRING_32
+			l_destination: ARRAYED_LIST [STRING_32]
 			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
 			l_feature: E_FEATURE
 			l_routine: ROUTINE_AS
 			l_type: NATURAL
 		do
-			l_destination := a_entry.destination
+			l_destination := a_entry.destinations
 			if l_destination = Void then
-				create l_destination.make_empty
+				create l_destination.make(1)
+				l_destination.item.make_empty
 			end
 			if a_editable then
-				create l_editable_item.make_with_text (l_destination)
+				create l_editable_item.make_with_text (l_destination.item)
 				l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
 				l_editable_item.set_text_validation_agent (agent is_destination_valid (?, l_editable_item))
 				-- l_editable_item.deactivate_actions.extend (agent on_destination_changed (?, l_editable_item))
 				l_editable_item.set_key_press_action (agent tab_to_next)
 				Result := l_editable_item
 			else
-				create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_destination)
+				create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_destination.item)
 			end
 		ensure
 			Result_not_void: Result /= Void

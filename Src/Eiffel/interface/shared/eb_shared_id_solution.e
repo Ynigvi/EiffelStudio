@@ -289,6 +289,103 @@ feature -- Access (Feature)
 			Result.append (encode (a_ast.feature_name.name_32))
 		end
 
+feature -- Access (Assertion)
+
+	assertion_of_id (a_id: STRING): TAGGED_AS
+			-- Assertion of `a_id'
+		require
+			a_id_not_void: a_id /= Void
+		local
+			l_class: CLASS_I
+			l_class_c: CLASS_C
+			l_feature_name: STRING_32
+			l_routine: ROUTINE_AS
+		do
+			last_feature_name := Void
+			l_class ?= class_of_id (a_id)
+			if strings.count >= feature_id_sections then
+				l_feature_name := decode (strings.i_th (feature_id_sections))
+				if l_class /= Void then
+					l_class_c := l_class.compiled_representation
+					if l_feature_name.same_string_general ("invariant") then
+						if attached l_class_c.invariant_ast as lt_invariants then
+							from
+								lt_invariants.assertion_list.start
+							until
+								lt_invariants.assertion_list.off
+							loop
+								if lt_invariants.assertion_list.item.tag.name_32.same_string_general (decode (strings.i_th (assertion_id_sections))) then
+									Result := lt_invariants.assertion_list.item
+								end
+								lt_invariants.assertion_list.forth
+							end
+						end
+					else
+						last_feature_name := l_feature_name
+						if l_class_c /= Void and then l_class_c.has_feature_table then
+							l_routine ?= l_class_c.feature_with_name_32 (l_feature_name).ast.body.content
+							if l_routine.has_precondition and then
+								attached l_routine.precondition as l_preconditions then
+								from
+								l_preconditions.assertions.start
+								until
+									l_preconditions.assertions.off
+								loop
+									if l_preconditions.assertions.item.tag.name_32.same_string_general (decode (strings.i_th (assertion_id_sections))) then
+										Result := l_preconditions.assertions.item
+									end
+									l_preconditions.assertions.forth
+								end
+							end
+							if l_routine.has_postcondition and then
+								attached l_routine.postcondition as l_postconditions then
+								from
+								l_postconditions.assertions.start
+								until
+									l_postconditions.assertions.off
+								loop
+									if l_postconditions.assertions.item.tag.name_32.same_string_general (decode (strings.i_th (assertion_id_sections))) then
+										Result := l_postconditions.assertions.item
+									end
+									l_postconditions.assertions.forth
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+
+	id_of_assertion (a_feature: E_FEATURE; a_assertion: TAGGED_AS): STRING
+			-- Unique id of an assertion in the system
+			-- `id_of_feature' + name_sep + tag
+		require
+			a_feature_not_void: a_feature /= Void
+			a_assertion_not_void: a_assertion /= Void
+			a_assertion_tagged: a_assertion.tag /= Void
+		do
+			Result := id_of_feature (a_feature)
+			Result.append (name_sep)
+			Result.append (encode (a_assertion.tag.name_32))
+		ensure
+			result_not_void: Result /= Void
+		end
+
+	id_of_invariant (a_class: CONF_CLASS; a_assertion: TAGGED_AS): STRING
+			-- Unique id of an invariant in the system
+			-- `id_of_class' + name_sep + "invariant" + name_sep + tag
+		require
+			a_class_not_void: a_class /= Void
+			a_assertion_not_void: a_assertion /= Void
+			a_assertion_tagged: a_assertion.tag /= Void
+		do
+			Result := id_of_class (a_class)
+			Result.append (name_sep)
+			Result.append ("invariant")
+			Result.append (name_sep)
+			Result.append (encode (a_assertion.tag.name_32))
+		end
+
 feature  -- Element Change
 
 	set_for_url (a_b: BOOLEAN)
@@ -565,6 +662,11 @@ feature {NONE} -- Access
 	feature_id_sections: INTEGER
 		once
 			Result := class_id_sections + 1
+		end
+
+	assertion_id_sections: INTEGER
+		once
+			Result := feature_id_sections + 1
 		end
 
 feature {NONE} -- Implementation

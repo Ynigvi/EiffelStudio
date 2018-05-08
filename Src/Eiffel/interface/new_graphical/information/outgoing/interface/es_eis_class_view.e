@@ -848,7 +848,7 @@ feature {NONE} -- Callbacks
 			a_item_not_void: a_item /= Void
 			a_item_not_void: a_grid_item /= Void
 		local
-			l_clause: TAGGED_AS
+			l_assertion: TAGGED_AS
 			l_classi: CLASS_I
 			l_done: BOOLEAN
 			l_new_entry: EIS_ENTRY
@@ -861,27 +861,27 @@ feature {NONE} -- Callbacks
 		do
 			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
 				if entry_editable (lt_entry, False) then
-					l_clause ?= a_item.data
+					l_assertion ?= a_item.data
 					if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
 						if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
 							l_new_entry := lt_new_entry
 						end
-						l_new_entry.set_destination (l_clause.tag.string_value_32)
+						l_new_entry.set_destination (l_assertion.tag.string_value_32)
 						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
 						l_done := True
 					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
 						if attached lt_entry.twin as lt_new_entry1 then
 							l_new_entry := lt_new_entry1
 						end
-						l_new_entry.set_destination (l_clause.tag.string_value_32)
+						l_new_entry.set_destination (l_assertion.tag.string_value_32)
 						modify_entry_in_class (lt_entry, l_new_entry, lt_class)
 						l_done := True
 					end
 						-- Modify the destination in the entry when the modification is done
 					if l_done then
 						storage.deregister_entry (lt_entry, component_id)
-						if l_clause /= Void then
-							lt_entry.set_destination (l_clause.tag.string_value_32)
+						if l_assertion /= Void then
+							lt_entry.set_destination (l_assertion.tag.string_value_32)
 						else
 							lt_entry.set_destination (Void)
 						end

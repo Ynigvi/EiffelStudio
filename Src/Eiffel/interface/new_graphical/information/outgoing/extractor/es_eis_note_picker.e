@@ -49,7 +49,7 @@ feature {NONE} -- Implementation
 				a_eis_tuple.protocol := a_value
 			elseif a_eis_tuple.source = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.source_string) then
 				a_eis_tuple.source := a_value
-			elseif a_eis_tuple.destination = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
+			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
 				a_eis_tuple.destination := parse_tags (a_value)
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.tag_string) then
 						-- To add more tags support.

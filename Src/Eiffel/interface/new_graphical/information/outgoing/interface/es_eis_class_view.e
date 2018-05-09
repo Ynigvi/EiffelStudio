@@ -504,31 +504,21 @@ feature {NONE} -- Destination token
 			l_feature: E_FEATURE
 			l_routine: ROUTINE_AS
 			l_classc: CLASS_C
-			l_tag: TAGGED_AS
 			l_type: NATURAL
 			l_line: EIFFEL_EDITOR_LINE
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
 			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
 			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
 			l_e_token_symbol: EB_GRID_EDITOR_TOKEN_COMPONENT
+			l_list_assertions: STRING_32
+			l_comma_needed: BOOLEAN
 		do
 			if a_editable then
 				create l_list.make (0)
+				create l_list_assertions.make_empty
+				l_comma_needed := False
 				l_editable_item := new_listable_item
 				l_type := id_solution.most_possible_type_of_id (a_entry.target_id)
-				if a_entry.destinations /= Void and then not a_entry.destinations.is_empty then
-					a_entry.destinations.start
-					l_tag := id_solution.assertion_of_id (a_entry.destinations.item)
-				else
-					l_tag := Void
-				end
-				if l_tag = Void then
-					if attached {E_FEATURE} id_solution.feature_of_id (a_entry.target_id) as lt_feature then
-						modify_entry_in_feature (a_entry, a_entry, lt_feature)
-					elseif attached {CLASS_I} id_solution.class_of_id (a_entry.target_id) as lt_class then
-						modify_entry_in_class (a_entry, a_entry, lt_class)
-					end
-				end
 				if l_type = id_solution.feature_type then
 					l_feature := id_solution.feature_of_id (a_entry.target_id)
 					if l_feature /= Void then
@@ -544,12 +534,17 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_precondition.assertions.item)), l_e_com>>))
+								if a_entry.has_destination (id_solution.id_of_assertion (l_feature, lt_precondition.assertions.item)) then
+									if l_comma_needed then
+										l_list_assertions.append (", ")
+									else
+										l_comma_needed := True
+									end
+									l_list_assertions.append (l_destination)
+								end
 								l_item_item.set_data (lt_precondition.assertions.item)
 								l_list.extend (l_item_item)
-								if l_tag /= Void and then lt_precondition.assertions.item.is_equivalent (l_tag) then
-									l_editable_item.set_list_item (l_item_item)
-								end
 								lt_precondition.assertions.forth
 							end
 						end
@@ -565,12 +560,17 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_postcondition.assertions.item)), l_e_com>>))
 								l_item_item.set_data (lt_postcondition.assertions.item)
-								l_list.extend (l_item_item)
-								if l_tag /= Void and then lt_postcondition.assertions.item.is_equivalent (l_tag) then
-									l_editable_item.set_list_item (l_item_item)
+								if a_entry.has_destination (id_solution.id_of_assertion (l_feature, lt_postcondition.assertions.item)) then
+									if l_comma_needed then
+										l_list_assertions.append (", ")
+									else
+										l_comma_needed := True
+									end
+									l_list_assertions.append (l_destination)
 								end
+								l_list.extend (l_item_item)
 								lt_postcondition.assertions.forth
 							end
 						end
@@ -588,12 +588,17 @@ feature {NONE} -- Destination token
 							token_writer.add (l_destination)
 							l_line := token_writer.last_line
 							create l_e_com.make (l_line.content, 0)
-							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
+							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_invariant (class_i.config_class, lt_invariants.assertion_list.item)), l_e_com>>))
 							l_item_item.set_data (lt_invariants.assertion_list.item)
-							l_list.extend (l_item_item)
-							if l_tag /= Void and then lt_invariants.assertion_list.item.is_equivalent (l_tag) then
-								l_editable_item.set_list_item (l_item_item)
+							if a_entry.has_destination (id_solution.id_of_invariant (class_i.config_class, lt_invariants.assertion_list.item)) then
+								if l_comma_needed then
+									l_list_assertions.append (", ")
+								else
+									l_comma_needed := True
+								end
+								l_list_assertions.append (l_destination)
 							end
+							l_list.extend (l_item_item)
 							lt_invariants.assertion_list.forth
 						end
 					end
@@ -601,6 +606,15 @@ feature {NONE} -- Destination token
 				if l_destination = Void then
 					create l_destination.make_empty
 				end
+				token_writer.new_line
+				token_writer.add (l_list_assertions)
+				l_line := token_writer.last_line
+				create l_e_com.make (l_line.content, 0)
+				create l_item_item.make(create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+				l_item_item.set_data (Void)
+				l_list.put_front (l_item_item)
+
+				l_editable_item.set_list_item (l_item_item)
 				l_editable_item.set_item_components (l_list)
 
 				Result := l_editable_item
@@ -888,9 +902,17 @@ feature {NONE} -- Callbacks
 			l_new_entry: EIS_ENTRY
 			l_dest_changed: BOOLEAN
 			l_assertion: STRING
+			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+			l_list_assertions: STRING_32
+			l_comma_needed: BOOLEAN
+			l_line: EIFFEL_EDITOR_LINE
 		do
 			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
 				if entry_editable (lt_entry, False) then
+					create l_list_assertions.make_empty
+					l_comma_needed := False
+
 					if attached {TAGGED_AS} a_item.data as lt_assertion then
 						if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
 							if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
@@ -913,8 +935,10 @@ feature {NONE} -- Callbacks
 							l_assertion := id_solution.id_of_invariant (lt_class.config_class, lt_assertion)
 							if l_new_entry.has_destination (l_assertion) then
 								l_dest_changed := l_new_entry.remove_destination (l_assertion)
+								a_item.item_components.put_i_th (check_symbol (l_new_entry, l_assertion), 1)
 							else
 								l_dest_changed := l_new_entry.add_destination (l_assertion)
+								a_item.item_components.put_i_th (check_symbol (l_new_entry, l_assertion), 1)
 							end
 							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
 							l_done := True
@@ -922,6 +946,27 @@ feature {NONE} -- Callbacks
 					end
 					if l_done then
 						storage.register_entry (l_new_entry, component_id, class_i.date)
+						from
+							l_new_entry.destinations.start
+						until
+							l_new_entry.destinations.off
+						loop
+							if l_comma_needed then
+								l_list_assertions.append (", ")
+							else
+								l_comma_needed := True
+							end
+							l_list_assertions.append (l_new_entry.destinations.item.split ('@').last)
+							l_new_entry.destinations.forth
+						end
+
+						token_writer.new_line
+						token_writer.add (l_list_assertions)
+						l_line := token_writer.last_line
+						create l_e_com.make (l_line.content, 0)
+						create l_item_item.make(create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+						a_grid_item.item_components.put(l_item_item, 1)
+						a_grid_item.set_list_item (l_item_item)
 					end
 				end
 			end

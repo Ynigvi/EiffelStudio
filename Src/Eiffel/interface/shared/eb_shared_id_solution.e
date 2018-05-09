@@ -435,6 +435,34 @@ feature  -- Element Change
 			name_sep_set: ((not a_b) and old is_for_url) implies (old name_sep) ~ encode (name_sep)
 		end
 
+feature -- ID creation from source
+
+	id_from_source (a_source: STRING; a_target: STRING): STRING
+		require
+			a_source_not_void: a_source /= Void
+			a_target_not_void: a_target /= Void
+			a_source_not_path: not a_source.has ('/') AND not a_source.has ('\')
+		local
+			l_ids: LIST[STRING]
+		do
+			l_ids := a_source.split ('.')
+			inspect l_ids.count
+			when 1 then
+				Result := id_of_class (class_of_id (a_target)) + name_sep + a_source
+			when 2 then
+				a_source.replace_substring_all (".", name_sep)
+				Result := id_of_group (group_of_id (a_target)) + name_sep + a_source
+			else
+				Result := a_source
+			end
+				if not id_valid(Result) then
+					Result := ""
+				end
+		ensure
+			a_source_valid: id_valid (a_source)
+		end
+
+
 feature -- ID modification
 
 	substitute_target_uuid (a_id: STRING; a_target_uuid: READABLE_STRING_GENERAL): STRING

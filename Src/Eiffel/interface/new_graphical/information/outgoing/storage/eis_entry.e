@@ -116,21 +116,33 @@ feature {ES_EIS_COMPONENT_VIEW} -- Element change
 			destinations_set: destinations = a_destinations
 		end
 
+	has_destination (a_destination: STRING_32): BOOLEAN
+		require
+			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
+			destinations_not_void: destinations /= Void
+		do
+			destinations.compare_objects
+			Result := destinations.has (a_destination)
+		ensure
+			destination_in_list: Result implies destinations.has (a_destination)
+		end
+
 	add_destination (a_destination: STRING_32): BOOLEAN
 		require
 			destination_valid: a_destination /= Void implies valid_attribute (a_destination)
 		do
+			destinations.compare_objects
 			if destinations = Void then
 				destinations.make (1)
 			end
-			if destinations.has (a_destination) then
+			if has_destination (a_destination) then
 				Result := false
 			else
 				destinations.extend (a_destination)
 				Result := true
 			end
 		ensure
-			destination_in_list: destinations.has (a_destination)
+			destination_in_list: has_destination (a_destination)
 		end
 
 	remove_destination (a_destination: STRING_32): BOOLEAN
@@ -139,16 +151,17 @@ feature {ES_EIS_COMPONENT_VIEW} -- Element change
 		local
 			l_index: INTEGER
 		do
-			l_index := destinations.index_of (a_destination, 0)
+			destinations.compare_objects
+			l_index := destinations.index_of (a_destination, 1)
 			if l_index /= 0 then
-				destinations.move (l_index)
+				destinations.go_i_th (l_index)
 				destinations.remove
 				Result := true
 			else
 				Result := false
 			end
 		ensure
-			destination_in_list: not destinations.has (a_destination)
+			destination_in_list: not has_destination (a_destination)
 		end
 
 	set_tags (a_tags: like tags)

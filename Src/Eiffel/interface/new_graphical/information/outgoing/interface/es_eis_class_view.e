@@ -510,12 +510,14 @@ feature {NONE} -- Destination token
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
 			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
 			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+			l_e_token_symbol: EB_GRID_EDITOR_TOKEN_COMPONENT
 		do
 			if a_editable then
 				create l_list.make (0)
 				l_editable_item := new_listable_item
 				l_type := id_solution.most_possible_type_of_id (a_entry.target_id)
 				if a_entry.destinations /= Void and then not a_entry.destinations.is_empty then
+					a_entry.destinations.start
 					l_tag := id_solution.assertion_of_id (a_entry.destinations.item)
 				else
 					l_tag := Void
@@ -542,7 +544,7 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
 								l_item_item.set_data (lt_precondition.assertions.item)
 								l_list.extend (l_item_item)
 								if l_tag /= Void and then lt_precondition.assertions.item.is_equivalent (l_tag) then
@@ -563,7 +565,7 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
 								l_item_item.set_data (lt_postcondition.assertions.item)
 								l_list.extend (l_item_item)
 								if l_tag /= Void and then lt_postcondition.assertions.item.is_equivalent (l_tag) then
@@ -586,7 +588,7 @@ feature {NONE} -- Destination token
 							token_writer.add (l_destination)
 							l_line := token_writer.last_line
 							create l_e_com.make (l_line.content, 0)
-							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<class_pixmap_component (class_i), l_e_com>>))
+							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, l_destination), l_e_com>>))
 							l_item_item.set_data (lt_invariants.assertion_list.item)
 							l_list.extend (l_item_item)
 							if l_tag /= Void and then lt_invariants.assertion_list.item.is_equivalent (l_tag) then
@@ -731,6 +733,22 @@ feature {NONE} -- Editable cache
 	editable_cache: detachable HASH_TABLE [BOOLEAN, HASHABLE]
 			-- Cache for editability of EIS entries.
 
+feature {NONE} --
+
+	check_symbol (a_entry: EIS_ENTRY; a_destination: STRING_32): EB_GRID_EDITOR_TOKEN_COMPONENT
+		local
+			l_line: EIFFEL_EDITOR_LINE
+		do
+			token_writer.new_line
+			if a_entry.has_destination (a_destination) then
+				token_writer.add ("[X]")
+			else
+				token_writer.add ("[ ]")
+			end
+			l_line := token_writer.last_line
+			create Result.make (l_line.content, 0)
+		end
+
 feature {NONE} -- Callbacks
 
 	on_name_changed (a_item: EV_GRID_EDITABLE_ITEM)
@@ -869,6 +887,7 @@ feature {NONE} -- Callbacks
 			l_done: BOOLEAN
 			l_new_entry: EIS_ENTRY
 			l_dest_changed: BOOLEAN
+			l_assertion: STRING
 		do
 			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
 				if entry_editable (lt_entry, False) then
@@ -877,44 +896,32 @@ feature {NONE} -- Callbacks
 							if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
 								l_new_entry := lt_new_entry
 							end
-							l_dest_changed := l_new_entry.add_destination (id_solution.id_of_assertion (lt_feature, lt_assertion))
+							l_assertion := id_solution.id_of_assertion (lt_feature, lt_assertion)
+							if l_new_entry.has_destination (l_assertion) then
+								l_dest_changed := l_new_entry.remove_destination (l_assertion)
+								a_item.item_components.put_i_th (check_symbol (l_new_entry, l_assertion), 1)
+							else
+								l_dest_changed := l_new_entry.add_destination (l_assertion)
+								a_item.item_components.put_i_th (check_symbol (l_new_entry, l_assertion), 1)
+							end
 							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
 							l_done := True
 						elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
 							if attached lt_entry.twin as lt_new_entry1 then
 								l_new_entry := lt_new_entry1
 							end
-							l_dest_changed := l_new_entry.add_destination (id_solution.id_of_invariant (lt_class.config_class, lt_assertion))
+							l_assertion := id_solution.id_of_invariant (lt_class.config_class, lt_assertion)
+							if l_new_entry.has_destination (l_assertion) then
+								l_dest_changed := l_new_entry.remove_destination (l_assertion)
+							else
+								l_dest_changed := l_new_entry.add_destination (l_assertion)
+							end
 							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
 							l_done := True
 						end
-
-						-- Modify the destination in the entry when the modification is done
-					if l_done then
-							storage.deregister_entry (lt_entry, component_id)
-							if lt_assertion /= Void then
-								l_dest_changed := lt_entry.add_destination (lt_assertion.tag.string_value_32)
-							else
-								lt_entry.set_destinations (Void)
-							end
-							storage.register_entry (lt_entry, component_id, class_i.date)
-						end
 					end
-				end
-
-				Result := l_done
-
-				if Result then
-					eis_grid.set_item (column_destination, a_grid_item.row.index, on_item_display (column_destination, a_grid_item.row.index))
-					if lt_entry.override then
-							-- Refresh the list to show/hide auto entries.
-							-- We cannot `rebuild_and_refresh_grid' directly, as it cleans up the grid
-							-- in the call of `deactivate' of {EB_GRID_LISTABLE_CHOICE_ITEM},
-							-- which causes problems.
-						ev_application.do_once_on_idle (agent rebuild_and_refresh_grid)
-					else
-							-- Refresh Override item, as it might be changed when changing from class to feature or vice versa.
-						eis_grid.set_item (column_override, a_grid_item.row.index, on_item_display (column_override, a_grid_item.row.index))
+					if l_done then
+						storage.register_entry (l_new_entry, component_id, class_i.date)
 					end
 				end
 			end

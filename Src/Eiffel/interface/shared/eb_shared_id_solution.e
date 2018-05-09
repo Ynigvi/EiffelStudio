@@ -462,6 +462,26 @@ feature -- ID creation from source
 			a_source_valid: id_valid (a_source)
 		end
 
+	pretty_source_from_id (a_source: STRING; a_target: STRING): STRING
+		require
+			a_source_not_void: a_source /= Void
+			a_target_not_void: a_target /= Void
+			a_source_not_path: not a_source.has ('/') AND not a_source.has ('\')
+		do
+			if a_source.same_string_general (a_target) then
+				Result := ""
+			elseif not id_valid (a_source) or not id_valid (a_target) then
+				Result := ""
+			else
+				if class_of_id (a_source).name.same_string_general (class_of_id (a_target).name) then
+					Result := feature_of_id (a_source).name_32
+				elseif group_of_id (a_source).name.same_string_general (group_of_id(a_target).name) then
+					Result := class_of_id (a_source).name + "." + feature_of_id (a_source).name_32
+				else
+					Result := group_of_id (a_source).name + "." + class_of_id (a_source).name + "." + feature_of_id (a_source).name_32
+				end
+			end
+		end
 
 feature -- ID modification
 

@@ -880,7 +880,7 @@ feature {NONE} -- Callbacks
 	on_destination_changed (a_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_grid_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
 			-- On destination changed
 			-- We modify neither the referenced EIS entry when the modification is done.
-		require
+		require else
 			a_item_not_void: a_item /= Void
 			a_item_not_void: a_grid_item /= Void
 		local

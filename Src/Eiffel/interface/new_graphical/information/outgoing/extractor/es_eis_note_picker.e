@@ -30,7 +30,7 @@ feature {NONE} -- Implementation
 											destination: ARRAYED_LIST [STRING_32];
 											tags: ARRAYED_LIST [STRING_32];
 											id: STRING;
-											type: NATURAL;
+											type: INTEGER;
 											parameters: STRING_TABLE [STRING_32];
 											override: BOOLEAN])
 			-- Fill `a_eis_tuple' from `a_key' and `a_value'.
@@ -84,7 +84,7 @@ feature {NONE} -- Implementation
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
-							type: NATURAL;
+							type: INTEGER;
 							parameters: STRING_TABLE [STRING_32];
 							override: BOOLEAN]
 			l_key, l_value, l_default: STRING_32
@@ -162,6 +162,9 @@ feature {NONE} -- Implementation
 				if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 					l_entry_tuple.parameters := Void
 				end
+				if l_entry_tuple.source /= Void and not (l_entry_tuple.source.has ('\') or l_entry_tuple.source.has ('/')) then
+					l_entry_tuple.source := id_solution.id_from_source (l_entry_tuple.source, l_entry_tuple.id)
+				end
 				if l_entry_tuple.destination /= Void then
 					from
 						l_entry_tuple.destination.start
@@ -193,7 +196,7 @@ feature {NONE} -- Implementation
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
-							type: NATURAL;
+							type: INTEGER;
 							parameters: STRING_TABLE [STRING_32];
 							override: BOOLEAN]
 			l_key, l_value: STRING_32
@@ -232,6 +235,9 @@ feature {NONE} -- Implementation
 						-- Set them to Void if empty.
 					if l_entry_tuple.tags /= Void and then l_entry_tuple.tags.is_empty then
 						l_entry_tuple.tags := Void
+					end
+					if l_entry_tuple.source /= Void and not (l_entry_tuple.source.has ('\') or l_entry_tuple.source.has ('/')) then
+						l_entry_tuple.source := id_solution.id_from_source (l_entry_tuple.source, l_entry_tuple.id)
 					end
 					if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 						l_entry_tuple.parameters := Void

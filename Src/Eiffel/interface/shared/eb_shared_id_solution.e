@@ -449,13 +449,16 @@ feature -- ID creation from source
 			inspect l_ids.count
 			when 1 then
 				Result := id_of_class (class_of_id (a_target)) + name_sep + a_source
+				if not id_valid (Result) then
+					Result := id_of_group (group_of_id (a_target)) + name_sep + a_source
+				end
 			when 2 then
 				a_source.replace_substring_all (".", name_sep)
 				Result := id_of_group (group_of_id (a_target)) + name_sep + a_source
 			else
 				Result := a_source
 			end
-				if not id_valid(Result) then
+				if not id_valid (Result) then
 					Result := ""
 				end
 		ensure
@@ -476,9 +479,15 @@ feature -- ID creation from source
 				if class_of_id (a_source).name.same_string_general (class_of_id (a_target).name) then
 					Result := feature_of_id (a_source).name_32
 				elseif group_of_id (a_source).name.same_string_general (group_of_id(a_target).name) then
-					Result := class_of_id (a_source).name + "." + feature_of_id (a_source).name_32
+					Result := class_of_id (a_source).name
+					if feature_of_id (a_source) /= Void then
+						Result := Result + "." + feature_of_id (a_source).name_32
+					end
 				else
-					Result := group_of_id (a_source).name + "." + class_of_id (a_source).name + "." + feature_of_id (a_source).name_32
+					Result := group_of_id (a_source).name + "." + class_of_id (a_source).name
+					if feature_of_id (a_source) /= Void then
+						Result := Result + "." + feature_of_id (a_source).name_32
+					end
 				end
 			end
 		end

@@ -283,7 +283,7 @@ feature -- Access
 	target_id: STRING
 			-- Id of the entry (from EB_SHARED_ID_SOLUTION)
 
-	type: NATURAL
+	type: INTEGER
 			-- Type of relationship
 
 	parameters: detachable STRING_TABLE [STRING_32] assign set_parameters
@@ -361,13 +361,13 @@ feature -- Access
 			fingerprint_set: Result /= Void
 		end
 
-feature -- Relationship type
+feature {ANY} -- Relationship type
 
-	traceability_type: like type = 0
-	refinement_type: like type = 1
-	containment_type: like type = 2
-	verify_type: like type = 3
-	satisfy_type: like type = 4
+	traceability_type: INTEGER = 0
+	refinement_type: INTEGER = 1
+	containment_type: INTEGER = 2
+	verify_type: INTEGER = 3
+	satisfy_type: INTEGER = 4
 
 feature -- Comparison
 

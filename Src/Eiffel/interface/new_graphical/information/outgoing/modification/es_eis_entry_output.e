@@ -49,7 +49,11 @@ feature -- Operation
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
 						l_output.append_character ({ES_EIS_TOKENS}.space)
 					end
-					l_output.append (quoted_string ({ES_EIS_TOKENS}.source_string + {ES_EIS_TOKENS}.value_assignment + l_source))
+					if l_source.has ('\') or l_source.has ('/') then
+						l_output.append (quoted_string ({ES_EIS_TOKENS}.source_string + {ES_EIS_TOKENS}.value_assignment + l_source))
+					else
+						l_output.append (quoted_string ({ES_EIS_TOKENS}.source_string + {ES_EIS_TOKENS}.value_assignment + id_solution.pretty_source_from_id (l_source, a_entry.target_id)))
+					end
 					l_comma_needed := True
 				end
 				if attached a_entry.destinations as l_destination and then not l_destination.is_empty then

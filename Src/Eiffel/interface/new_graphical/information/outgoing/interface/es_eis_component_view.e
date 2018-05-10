@@ -908,7 +908,7 @@ feature {NONE} -- Grid items
 					token_writer.process_basic_text (l_c.item)
 					l_line := token_writer.last_line
 					create l_e_com.make (l_line.content, 0)
-					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com >>))
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com >>))
 					l_item_item.set_data (l_c.item)
 					l_list.extend (l_item_item)
 						-- Set the selected item
@@ -924,7 +924,7 @@ feature {NONE} -- Grid items
 					token_writer.process_basic_text (l_protocol)
 					l_line := Token_writer.last_line
 					create l_e_com.make (l_line.content, 0)
-					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com >>))
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com >>))
 					l_item_item.set_data (l_protocol)
 					l_list.put_front (l_item_item)
 						-- Set the selected item
@@ -1018,7 +1018,7 @@ feature {NONE} -- Grid items
 					token_writer.process_basic_text (l_c.item)
 					l_line := token_writer.last_line
 					create l_e_com.make (l_line.content, 0)
-					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com >>))
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com >>))
 					l_item_item.set_data (l_c.item)
 					l_list.extend (l_item_item)
 						-- Set the selected item
@@ -1074,7 +1074,7 @@ feature {NONE} -- Grid items
 					token_writer.add ("")
 					l_line := token_writer.last_line
 					create l_e_com.make (l_line.content, 0)
-					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 					l_item_item.set_data (Void)
 					l_list.extend (l_item_item)
 --					if l_tag = Void then
@@ -1099,7 +1099,7 @@ feature {NONE} -- Grid items
 									token_writer.add (l_ref)
 									l_line := token_writer.last_line
 									create l_e_com.make (l_line.content, 0)
-									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 									l_item_item.set_data (lt_precondition.assertions.item)
 									l_list.extend (l_item_item)
 									if l_tag /= Void and then lt_precondition.assertions.item.is_equivalent (l_tag) then
@@ -1120,7 +1120,7 @@ feature {NONE} -- Grid items
 									token_writer.add (l_ref)
 									l_line := token_writer.last_line
 									create l_e_com.make (l_line.content, 0)
-									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 									l_item_item.set_data (lt_postcondition.assertions.item)
 									l_list.extend (l_item_item)
 									if l_tag /= Void and then lt_postcondition.assertions.item.is_equivalent (l_tag) then
@@ -1144,7 +1144,7 @@ feature {NONE} -- Grid items
 								token_writer.add (l_ref)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 								l_item_item.set_data (lt_invariants.assertion_list.item)
 								l_list.extend (l_item_item)
 								if l_tag /= Void and then lt_invariants.assertion_list.item.is_equivalent (l_tag) then

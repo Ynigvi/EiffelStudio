@@ -537,7 +537,7 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_precondition.assertions.item)), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_precondition.assertions.item)), l_e_com>>))
 								if a_entry.has_destination (id_solution.id_of_assertion (l_feature, lt_precondition.assertions.item)) then
 									if l_comma_needed then
 										l_list_assertions.append (", ")
@@ -563,7 +563,7 @@ feature {NONE} -- Destination token
 								token_writer.add (l_destination)
 								l_line := token_writer.last_line
 								create l_e_com.make (l_line.content, 0)
-								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_postcondition.assertions.item)), l_e_com>>))
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<check_symbol (a_entry, id_solution.id_of_assertion (l_feature, lt_postcondition.assertions.item)), l_e_com>>))
 								l_item_item.set_data (lt_postcondition.assertions.item)
 								if a_entry.has_destination (id_solution.id_of_assertion (l_feature, lt_postcondition.assertions.item)) then
 									if l_comma_needed then
@@ -591,7 +591,7 @@ feature {NONE} -- Destination token
 							token_writer.add (l_destination)
 							l_line := token_writer.last_line
 							create l_e_com.make (l_line.content, 0)
-							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<check_symbol (a_entry, id_solution.id_of_invariant (class_i.config_class, lt_invariants.assertion_list.item)), l_e_com>>))
+							create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<check_symbol (a_entry, id_solution.id_of_invariant (class_i.config_class, lt_invariants.assertion_list.item)), l_e_com>>))
 							l_item_item.set_data (lt_invariants.assertion_list.item)
 							if a_entry.has_destination (id_solution.id_of_invariant (class_i.config_class, lt_invariants.assertion_list.item)) then
 								if l_comma_needed then
@@ -613,7 +613,7 @@ feature {NONE} -- Destination token
 				token_writer.add (l_list_assertions)
 				l_line := token_writer.last_line
 				create l_e_com.make (l_line.content, 0)
-				create l_item_item.make(create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+				create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 				l_item_item.set_data (Void)
 				l_list.put_front (l_item_item)
 
@@ -1056,7 +1056,7 @@ feature {NONE} -- Callbacks
 						token_writer.add (l_list_assertions)
 						l_line := token_writer.last_line
 						create l_e_com.make (l_line.content, 0)
-						create l_item_item.make(create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+						create l_item_item.make(create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array ({ARRAY [ES_GRID_ITEM_COMPONENT]} <<l_e_com>>))
 						a_grid_item.item_components.put(l_item_item, 1)
 						a_grid_item.set_list_item (l_item_item)
 					end

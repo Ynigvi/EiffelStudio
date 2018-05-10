@@ -625,6 +625,11 @@ feature {ES_EIS_COMPONENT_VIEW} -- Operation
 			end
 		end
 
+	on_type_changed (a_choice_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
+			-- On protocol changed
+		do
+		end
+
 feature {ES_EIS_COMPONENT_VIEW} -- Access
 
 	component: G
@@ -991,13 +996,45 @@ feature {NONE} -- Grid items
 		require
 			a_entry_not_void: a_entry /= Void
 		local
-			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
+			l_type: STRING_32
+			l_editable_item: EB_GRID_LISTABLE_CHOICE_ITEM
+			l_line: EIFFEL_EDITOR_LINE
+			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
+			l_selected: BOOLEAN
 		do
 			if a_editable then
-				create l_editable_item.make_with_text ("-")
+				l_editable_item := new_listable_item
+				l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
+				create l_list.make (known_types.count + 1)
+
+					-- Create types choice list
+				across
+					known_types as l_c
+				loop
+					token_writer.new_line
+					token_writer.process_basic_text (l_c.item)
+					l_line := token_writer.last_line
+					create l_e_com.make (l_line.content, 0)
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com >>))
+					l_item_item.set_data (l_c.item)
+					l_list.extend (l_item_item)
+						-- Set the selected item
+					if l_type.is_case_insensitive_equal (l_c.item) then
+						l_editable_item.set_list_item (l_item_item)
+						l_selected := True
+					end
+				end
+
+				l_editable_item.set_item_components (l_list)
 				Result := l_editable_item
+				if l_editable_item.item_components /= Void and then l_editable_item.item_components.index_set.count > 1 then
+					l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
+					l_editable_item.set_selection_changing_action (agent on_type_changed (?, l_editable_item))
+				end
 			else
-				create {EV_GRID_LABEL_ITEM} Result.make_with_text ("-")
+				create {EV_GRID_LABEL_ITEM} Result.make_with_text (l_type)
 			end
 		ensure
 			Result_not_void: Result /= Void
@@ -1479,6 +1516,41 @@ feature {NONE} -- Implementation
 				create Result.make (1)
 				Result.extend ({STRING_32} "URI")
 			end
+		end
+
+	known_types: ARRAYED_LIST [STRING_32]
+			-- Known EIS relationships types
+		once
+			create Result.make (5)
+			Result.extend ({ES_EIS_TOKENS}.traceability_var_name)
+			Result.extend ({ES_EIS_TOKENS}.refinement_var_name)
+			Result.extend ({ES_EIS_TOKENS}.containment_var_name)
+			Result.extend ({ES_EIS_TOKENS}.verify_var_name)
+			Result.extend ({ES_EIS_TOKENS}.satisfy_var_name)
+		end
+
+	type_string_from_eis_entry (entry: EIS_ENTRY): STRING_32
+			-- Return the string representation of the entry's type
+		require
+			entry_not_void: entry /= Void
+			type_valid: entry.valid_type (entry.type)
+		do
+			inspect entry.type
+			when {EIS_ENTRY}.traceability_type then
+				Result := {ES_EIS_TOKENS}.traceability_var_name
+			when {EIS_ENTRY}.refinement_type then
+				Result := {ES_EIS_TOKENS}.refinement_var_name
+			when {EIS_ENTRY}.containment_type then
+				Result := {ES_EIS_TOKENS}.containment_var_name
+			when {EIS_ENTRY}.verify_type then
+				Result := {ES_EIS_TOKENS}.verify_var_name
+			when {EIS_ENTRY}.satisfy_type then
+				Result := {ES_EIS_TOKENS}.satisfy_var_name
+			else
+				Result := {ES_EIS_TOKENS}.traceability_var_name
+			end
+		ensure
+			result_not_void: Result /= Void
 		end
 
 feature {NONE} -- Column constants

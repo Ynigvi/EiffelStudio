@@ -373,6 +373,10 @@ feature {NONE} -- Initialization
 			l_grid.column (column_tags).set_title (interface_names.l_tags)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_tags, ?, ?, ?, ?, ?, ?, ?, ?))
 
+			l_column := l_grid.column (column_ref)
+			l_grid.column (column_ref).set_title (interface_names.l_ref)
+			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_type, ?, ?, ?, ?, ?, ?, ?, ?))
+
 			l_column := l_grid.column (column_override)
 			l_grid.column (column_override).set_title (interface_names.l_override)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_override, ?, ?, ?, ?, ?, ?, ?, ?))
@@ -1008,6 +1012,13 @@ feature {NONE} -- Grid items
 					l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
 					l_type := id_solution.most_possible_type_of_id (a_entry.source)
 					l_tag := id_solution.assertion_of_id (l_ref)
+					token_writer.new_line
+					token_writer.add ("")
+					l_line := token_writer.last_line
+					create l_e_com.make (l_line.content, 0)
+					create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+					l_item_item.set_data (Void)
+					l_list.extend (l_item_item)
 --					if l_tag = Void then
 --						if attached {E_FEATURE} id_solution.feature_of_id (a_entry.source) as lt_feature then
 --							modify_entry_in_feature (a_entry, a_entry, lt_feature)
@@ -1062,8 +1073,9 @@ feature {NONE} -- Grid items
 							end
 						end
 					elseif l_type = id_solution.class_type then
-						l_classc ?= id_solution.class_of_id (a_entry.source)
-						if attached l_classc.invariant_ast as lt_invariants then
+						l_classc ?= id_solution.class_of_id (a_entry.source).actual_class
+
+						if l_classc /= Void and then attached l_classc.invariant_ast as lt_invariants then
 							from
 								lt_invariants.assertion_list.start
 							until
@@ -1459,10 +1471,9 @@ feature {NONE} -- Column constants
 	column_protocol: INTEGER = 6
 	column_name: INTEGER = 7
 	column_tags: INTEGER = 8
-	column_override: INTEGER = 9
-	numbers_of_column: INTEGER = 9;
-
-
+	column_type: INTEGER = 9
+	column_override: INTEGER = 10
+	numbers_of_column: INTEGER = 10;
 
 invariant
 	component_not_void: component /= Void

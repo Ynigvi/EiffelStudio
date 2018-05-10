@@ -1004,6 +1004,7 @@ feature {NONE} -- Grid items
 			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
 			l_selected: BOOLEAN
 		do
+			l_type := type_string_from_eis_entry (a_entry)
 			if a_editable then
 				l_editable_item := new_listable_item
 				l_editable_item.set_choice_list_key_press_action (agent tab_to_next)

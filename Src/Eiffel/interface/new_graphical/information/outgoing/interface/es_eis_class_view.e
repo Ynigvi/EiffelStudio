@@ -1116,17 +1116,37 @@ feature {NONE} -- Callbacks
 			l_new_entry: EIS_ENTRY
 			l_done: BOOLEAN
 			l_type: like {EIS_ENTRY}.type
+			l_error: BOOLEAN
 		do
 			if attached {EIS_ENTRY} a_item.row.data as lt_entry and then attached {STRING_32} a_choice_item.data as lt_type then
 				l_type := parse_type (lt_type)
 				if entry_editable (lt_entry, False) then
+					l_error := False
 					if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
-						if attached lt_entry.twin as lt_new_entry then
-							l_new_entry := lt_new_entry
+						if l_type = {EIS_ENTRY}.refinement_type then
+							l_error := True
+							if attached lt_entry.source as lt_source and then id_solution.id_valid (lt_source) then
+								if id_solution.most_possible_type_of_id (lt_source) = id_solution.feature_type then
+									if attached {CLASS_I} id_solution.class_of_id (lt_source) as lt_class then
+										if lt_feature.ancestor_version (lt_class.compiled_class) /= Void then
+											l_error := False
+										end
+									end
+								end
+							end
+							if l_error then
+								prompts.show_error_prompt ("'Refine' type eis entry should have a redefined feature source.", Void, Void)
+							end
 						end
-						l_new_entry.set_type (l_type)
-						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
-						l_done := True
+
+						if not l_error then
+							if attached lt_entry.twin as lt_new_entry then
+								l_new_entry := lt_new_entry
+							end
+							l_new_entry.set_type (l_type)
+							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
+							l_done := True
+						end
 					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
 						if attached lt_entry.twin as lt_new_entry1 then
 							l_new_entry := lt_new_entry1

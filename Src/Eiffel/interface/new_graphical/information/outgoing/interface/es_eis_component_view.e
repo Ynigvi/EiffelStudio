@@ -344,6 +344,7 @@ feature {NONE} -- Initialization
 			l_grid.set_auto_resizing_column (column_protocol, True)
 			l_grid.set_auto_resizing_column (column_source, True)
 			l_grid.set_auto_resizing_column (column_ref, True)
+			l_grid.set_auto_resizing_column (column_type, True)
 
 			l_column := l_grid.column (column_target)
 			l_column.set_title (interface_names.l_target)
@@ -373,8 +374,8 @@ feature {NONE} -- Initialization
 			l_grid.column (column_tags).set_title (interface_names.l_tags)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_tags, ?, ?, ?, ?, ?, ?, ?, ?))
 
-			l_column := l_grid.column (column_ref)
-			l_grid.column (column_ref).set_title (interface_names.l_ref)
+			l_column := l_grid.column (column_type)
+			l_grid.column (column_type).set_title (interface_names.l_type)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_type, ?, ?, ?, ?, ?, ?, ?, ?))
 
 			l_column := l_grid.column (column_override)
@@ -516,6 +517,8 @@ feature {NONE} -- Events
 					Result := destination_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_ref then
 					Result := ref_item_from_eis_entry (l_eis_entry, l_editable)
+				when column_type then
+					Result := type_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_tags then
 						-- Tags
 					Result := tags_item_from_eis_entry (l_eis_entry, l_editable)
@@ -968,6 +971,23 @@ feature {NONE} -- Grid items
 
 	destination_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
 			-- Grid item of destination from an EIS entry.
+		require
+			a_entry_not_void: a_entry /= Void
+		local
+			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
+		do
+			if a_editable then
+				create l_editable_item.make_with_text ("-")
+				Result := l_editable_item
+			else
+				create {EV_GRID_LABEL_ITEM} Result.make_with_text ("-")
+			end
+		ensure
+			Result_not_void: Result /= Void
+		end
+
+	type_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
+			-- Grid item of type from an EIS entry.
 		require
 			a_entry_not_void: a_entry /= Void
 		local

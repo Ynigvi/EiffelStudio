@@ -72,13 +72,10 @@ feature -- Basic operations
 										l_documents.call_method ("Open", [l_formatted_source])
 										l_succeed := l_documents.is_successful
 											-- Get and go to bookmark if any.
-										if l_succeed and then attached l_entry.parameters as l_parameters then
-											l_parameters.search (bookmark_string)
-											if l_parameters.found then
-												l_bookmark := l_parameters.found_item
-												if attached l_documents.last_object as l_doc then
-													l_active_doc := l_doc
-												end
+										if l_succeed and then attached l_entry.ref as l_ref then
+											l_bookmark := l_ref
+											if attached l_documents.last_object as l_doc then
+												l_active_doc := l_doc
 											end
 										end
 									end
@@ -111,7 +108,7 @@ feature {NONE} -- Constants
 	word_application_string: STRING_32 = "Word.Application"
 
 note
-	copyright: "Copyright (c) 1984-2014, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

@@ -114,14 +114,13 @@ feature -- Basic operations
 					l_result.append (lt_parameters.found_item)
 					l_found := True
 				end
-				lt_parameters.search (acrobat_nameddest)
-				if lt_parameters.found then
+				if  attached a_entry.ref as lt_nameddest then
 					if l_found then
 						l_result.append (acrobat_sep)
 					end
 					l_result.append (acrobat_nameddest)
 					l_result.append (acrobat_attri_sep)
-					l_result.append (lt_parameters.found_item)
+					l_result.append (lt_nameddest)
 					l_found := True
 				end
 				if l_found then
@@ -176,7 +175,7 @@ feature {NONE} -- Constants
 	acrobat_nameddest: STRING_32 = "nameddest";
 
 note
-	copyright: "Copyright (c) 1984-2014, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

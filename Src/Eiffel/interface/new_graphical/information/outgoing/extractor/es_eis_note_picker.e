@@ -30,6 +30,7 @@ feature {NONE} -- Implementation
 											destination: ARRAYED_LIST [STRING_32];
 											tags: ARRAYED_LIST [STRING_32];
 											id: STRING;
+											type: NATURAL;
 											parameters: STRING_TABLE [STRING_32];
 											override: BOOLEAN])
 			-- Fill `a_eis_tuple' from `a_key' and `a_value'.
@@ -83,6 +84,7 @@ feature {NONE} -- Implementation
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
+							type: NATURAL;
 							parameters: STRING_TABLE [STRING_32];
 							override: BOOLEAN]
 			l_key, l_value, l_default: STRING_32
@@ -95,7 +97,7 @@ feature {NONE} -- Implementation
 				create l_parameters.make (3)
 				create l_tags.make (2)
 				create l_destinations.make (2)
-				l_entry_tuple := [l_default, l_default, l_default, l_destinations, l_tags, a_eis_id, l_parameters, False]
+				l_entry_tuple := [l_default, l_default, l_default, l_destinations, l_tags, a_eis_id, {EIS_ENTRY}.traceability_type, l_parameters, False]
 				from
 					l_index_list.start
 				until
@@ -170,7 +172,7 @@ feature {NONE} -- Implementation
 						l_entry_tuple.destination.forth
 					end
 				end
-				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
+				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
 				Result.set_override (l_entry_tuple.override)
 				Result.set_source_pos ([l_source_pos, l_source_len])
 			end
@@ -191,6 +193,7 @@ feature {NONE} -- Implementation
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
+							type: NATURAL;
 							parameters: STRING_TABLE [STRING_32];
 							override: BOOLEAN]
 			l_key, l_value: STRING_32
@@ -233,7 +236,7 @@ feature {NONE} -- Implementation
 					if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 						l_entry_tuple.parameters := Void
 					end
-					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.parameters)
+					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
 				end
 			end
 		end

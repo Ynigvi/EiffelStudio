@@ -18,7 +18,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destinations; a_tags: like tags; a_id: like target_id; a_parameters: like parameters)
+	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destinations; a_tags: like tags; a_id: like target_id; a_type: like type; a_parameters: like parameters)
 			-- Initialization
 		require
 			a_id_not_void: a_id /= Void
@@ -28,6 +28,7 @@ feature {NONE} -- Initialization
 			source_valid: a_source /= Void implies valid_attribute (a_source)
 			destination_valid: a_destination /= Void implies valid_tags (a_destination)
 			tags_valid: a_tags /= Void implies valid_tags (a_tags)
+			type_valid: a_type /= Void implies valid_type (a_type)
 			parameters_valid: a_parameters /= Void implies valid_parameters (a_parameters)
 		do
 			name := a_name
@@ -35,6 +36,7 @@ feature {NONE} -- Initialization
 			source := a_source
 			destinations := a_destination
 			tags := a_tags
+			type := a_type
 			target_id := a_id
 			parameters := a_parameters
 		ensure
@@ -44,6 +46,7 @@ feature {NONE} -- Initialization
 			destination_set: destinations = a_destination
 			tags_set: tags = a_tags
 			id_set: target_id = a_id
+			type_set: type = a_type
 			parameters_set: parameters = a_parameters
 		end
 
@@ -224,6 +227,16 @@ feature -- Query
 			Result := across a_tags as l_c all valid_attribute (l_c.item) end
 		end
 
+	valid_type (a_type: like type): BOOLEAN
+			-- Is `a_type' valid?
+		do
+			Result := a_type = traceability_type or
+					  a_type = refinement_type or
+					  a_type = containment_type or
+					  a_type = verify_type or
+					  a_type = satisfy_type
+		end
+
 	valid_parameters (a_parameters: like parameters): BOOLEAN
 			-- Is `a_tags' valid?
 		do
@@ -269,6 +282,9 @@ feature -- Access
 
 	target_id: STRING
 			-- Id of the entry (from EB_SHARED_ID_SOLUTION)
+
+	type: NATURAL
+			-- Type of relationship
 
 	parameters: detachable STRING_TABLE [STRING_32] assign set_parameters
 			-- Parameters of the entry
@@ -344,6 +360,14 @@ feature -- Access
 		ensure
 			fingerprint_set: Result /= Void
 		end
+
+feature -- Relationship type
+
+	traceability_type: like type = 0
+	refinement_type: like type = 1
+	containment_type: like type = 2
+	verify_type: like type = 3
+	satisfy_type: like type = 4
 
 feature -- Comparison
 

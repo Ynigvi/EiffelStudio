@@ -13,7 +13,7 @@ feature -- Access
 		require
 			a_id_not_void: a_id /= Void
 		do
-			create Result.make (default_name, default_protocol, default_source, Void, Void, a_id, Void)
+			create Result.make (default_name, default_protocol, default_source, Void, Void, a_id, {EIS_ENTRY}.traceability_type, Void)
 		end
 
 feature {NONE} -- Access

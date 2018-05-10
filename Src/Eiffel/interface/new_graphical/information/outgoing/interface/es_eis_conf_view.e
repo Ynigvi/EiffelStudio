@@ -94,7 +94,7 @@ feature -- Operation
 					if not lt_cluster.is_readonly then
 						l_system := lt_cluster.target.system
 						l_date := l_system.file_date
-						create l_entry.make ("Unnamed", Void, Void, Void, Void, component_id, Void)
+						create l_entry.make ("Unnamed", Void, Void, Void, Void, component_id, {EIS_ENTRY}.traceability_type, Void)
 						write_entry (l_entry, lt_cluster, l_system)
 						l_added := last_entry_modified
 					else

@@ -13,6 +13,8 @@ inherit
 
 	ES_SHARED_FONTS_AND_COLORS
 
+	ES_EIS_SHARED_TYPE
+
 feature -- Access
 
 	id_solution: EB_SHARED_ID_SOLUTION
@@ -65,7 +67,7 @@ feature -- Access
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software"
+	copyright: "Copyright (c) 1984-2018, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

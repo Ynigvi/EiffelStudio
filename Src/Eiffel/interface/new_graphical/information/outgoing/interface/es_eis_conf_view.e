@@ -24,7 +24,8 @@ inherit
 			on_ref_changed,
 			on_ref_assertion_changed,
 			on_tags_changed,
-			on_parameters_changed
+			on_parameters_changed,
+			known_types
 		end
 
 	SHARED_WORKBENCH
@@ -624,6 +625,13 @@ feature {NONE} -- Implementation
 
 	internal_component_id: detachable STRING;
 			-- Buffered component ID
+
+	known_types: ARRAYED_LIST [STRING_32]
+			-- Known EIS relationships types
+		once
+			create Result.make (1)
+			Result.extend ({ES_EIS_TOKENS}.traceability_var_name)
+		end
 
 invariant
 	conf_notable_is_valid: valid_notable (conf_notable)

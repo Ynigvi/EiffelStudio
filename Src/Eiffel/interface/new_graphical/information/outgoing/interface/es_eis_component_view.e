@@ -1529,30 +1529,6 @@ feature {NONE} -- Implementation
 			Result.extend ({ES_EIS_TOKENS}.satisfy_var_name)
 		end
 
-	type_string_from_eis_entry (entry: EIS_ENTRY): STRING_32
-			-- Return the string representation of the entry's type
-		require
-			entry_not_void: entry /= Void
-			type_valid: entry.valid_type (entry.type)
-		do
-			inspect entry.type
-			when {EIS_ENTRY}.traceability_type then
-				Result := {ES_EIS_TOKENS}.traceability_var_name
-			when {EIS_ENTRY}.refinement_type then
-				Result := {ES_EIS_TOKENS}.refinement_var_name
-			when {EIS_ENTRY}.containment_type then
-				Result := {ES_EIS_TOKENS}.containment_var_name
-			when {EIS_ENTRY}.verify_type then
-				Result := {ES_EIS_TOKENS}.verify_var_name
-			when {EIS_ENTRY}.satisfy_type then
-				Result := {ES_EIS_TOKENS}.satisfy_var_name
-			else
-				Result := {ES_EIS_TOKENS}.traceability_var_name
-			end
-		ensure
-			result_not_void: Result /= Void
-		end
-
 feature {NONE} -- Column constants
 
 	column_target: INTEGER = 1

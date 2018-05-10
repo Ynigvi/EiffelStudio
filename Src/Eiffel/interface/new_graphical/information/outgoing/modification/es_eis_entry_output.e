@@ -102,6 +102,15 @@ feature -- Operation
 					l_comma_needed := True
 				end
 
+				if attached a_entry.type as l_type and then l_type /= 0 then
+					if l_comma_needed then
+						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
+						l_output.append_character ({ES_EIS_TOKENS}.space)
+					end
+					l_output.append (quoted_string ({ES_EIS_TOKENS}.type_string + {ES_EIS_TOKENS}.value_assignment + type_string_from_eis_entry (a_entry)))
+					l_comma_needed := True
+				end
+
 				if a_entry.override then
 					if l_comma_needed then
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)

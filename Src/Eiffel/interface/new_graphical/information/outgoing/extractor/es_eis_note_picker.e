@@ -53,7 +53,7 @@ feature {NONE} -- Implementation
 				a_eis_tuple.source := a_value
 			elseif a_eis_tuple.ref = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.ref_string) then
 				a_eis_tuple.ref := a_value
-			elseif a_eis_tuple.type = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.type_string) then
+			elseif a_eis_tuple.type = 0 and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.type_string) then
 				a_eis_tuple.type := parse_type (a_value)
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
 				a_eis_tuple.destination := parse_tags (a_value)
@@ -258,29 +258,6 @@ feature {NONE} -- Implementation
 					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.ref, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
 				end
 			end
-		end
-
-	parse_type (a_type_string: STRING_32): INTEGER
-			-- Parse `a_type_string' and return the corresponding integer.
-			-- If not a valid type, default type is returned.
-		require
-			a_type_string_not_void: a_type_string /= Void
-		do
-			if a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.traceability_var_name) then
-				Result := {EIS_ENTRY}.traceability_type
-			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.refinement_var_name) then
-				Result := {EIS_ENTRY}.refinement_type
-			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.containment_var_name) then
-				Result := {EIS_ENTRY}.containment_type
-			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.verify_var_name) then
-				Result := {EIS_ENTRY}.verify_type
-			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.satisfy_var_name) then
-				Result := {EIS_ENTRY}.satisfy_type
-			else
-				Result := {EIS_ENTRY}.default_type
-			end
-		ensure
-			Result_not_void: Result /= Void
 		end
 
 	parse_tags (a_tag_string: STRING_32): ARRAYED_LIST [STRING_32]

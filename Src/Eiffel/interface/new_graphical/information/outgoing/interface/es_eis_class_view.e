@@ -30,7 +30,8 @@ inherit
 			on_parameters_changed,
 			compute_grid_rows,
 			on_override_changed,
-			override_item_from_eis_entry
+			override_item_from_eis_entry,
+			on_type_changed
 		end
 
 create
@@ -1103,6 +1104,43 @@ feature {NONE} -- Callbacks
 							end
 							storage.register_entry (lt_entry, component_id, class_i.date)
 						end
+					end
+				end
+			end
+		end
+
+	on_type_changed (a_choice_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
+			-- On type changed
+			-- We modify neither the referenced EIS entry when the modification is done.
+		local
+			l_new_entry: EIS_ENTRY
+			l_done: BOOLEAN
+			l_type: like {EIS_ENTRY}.type
+		do
+			if attached {EIS_ENTRY} a_item.row.data as lt_entry and then attached {STRING_32} a_choice_item.data as lt_type then
+				l_type := parse_type (lt_type)
+				if entry_editable (lt_entry, False) then
+					if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
+						if attached lt_entry.twin as lt_new_entry then
+							l_new_entry := lt_new_entry
+						end
+						l_new_entry.set_type (l_type)
+						modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
+						l_done := True
+					elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
+						if attached lt_entry.twin as lt_new_entry1 then
+							l_new_entry := lt_new_entry1
+						end
+						l_new_entry.set_type (l_type)
+						modify_entry_in_class (lt_entry, l_new_entry, lt_class)
+						l_done := True
+					end
+						-- Modify the type in the entry when the modification is done
+					if l_done then
+						storage.deregister_entry (lt_entry, component_id)
+						lt_entry.set_type (l_type)
+						storage.register_entry (lt_entry, component_id, class_i.date)
+						Result := True
 					end
 				end
 			end

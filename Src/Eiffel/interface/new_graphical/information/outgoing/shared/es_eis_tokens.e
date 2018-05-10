@@ -18,7 +18,11 @@ feature -- Access
 
 	source_string: STRING_32 = "src"
 
+	ref_string: STRING_32 = "ref"
+
 	destination_string: STRING_32 = "dest"
+
+	type_string: STRING_32 = "type"
 
 	tag_string: STRING_32 = "tag"
 
@@ -60,6 +64,14 @@ feature -- Built in variables
 	unique_id_var_name: STRING_32 = "unique_id"
 	system_path_var_name: STRING_32 = "system_path"
 	;
+
+feature -- Entry type variables
+
+	traceability_var_name: STRING = "trace"
+	refinement_var_name: STRING = "refine"
+	containment_var_name: STRING = "contains"
+	verify_var_name: STRING = "verify"
+	satisfy_var_name: STRING = "satisfy"
 
 note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"

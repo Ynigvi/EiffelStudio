@@ -18,7 +18,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_destination: like destinations; a_tags: like tags; a_id: like target_id; a_type: like type; a_parameters: like parameters)
+	make (a_name: like name; a_protocol: like protocol; a_source: like source; a_ref: like ref; a_destination: like destinations; a_tags: like tags; a_id: like target_id; a_type: like type; a_parameters: like parameters)
 			-- Initialization
 		require
 			a_id_not_void: a_id /= Void
@@ -26,6 +26,7 @@ feature {NONE} -- Initialization
 			name_valid: a_name /= Void implies valid_attribute (a_name)
 			protocol_valid: a_protocol /= Void implies valid_attribute (a_protocol)
 			source_valid: a_source /= Void implies valid_attribute (a_source)
+			ref_valid: a_ref /= Void implies valid_attribute (a_ref)
 			destination_valid: a_destination /= Void implies valid_tags (a_destination)
 			tags_valid: a_tags /= Void implies valid_tags (a_tags)
 			type_valid: a_type /= Void implies valid_type (a_type)
@@ -34,6 +35,7 @@ feature {NONE} -- Initialization
 			name := a_name
 			protocol := a_protocol
 			source := a_source
+			ref := a_ref
 			destinations := a_destination
 			tags := a_tags
 			type := a_type
@@ -43,6 +45,7 @@ feature {NONE} -- Initialization
 			name_set: name = a_name
 			protocol_set: protocol = a_protocol
 			source_set: source = a_source
+			ref_set: ref = a_ref
 			destination_set: destinations = a_destination
 			tags_set: tags = a_tags
 			id_set: target_id = a_id
@@ -101,6 +104,38 @@ feature {ES_EIS_COMPONENT_VIEW} -- Element change
 			end
 		ensure
 			source_set: source = a_source
+		end
+
+	set_ref (a_ref: like ref)
+			-- Set `ref' with `a_ref'.
+		require
+			ref_valid: a_ref /= Void implies valid_attribute (a_ref)
+		local
+			l_ref: like ref
+		do
+			l_ref := ref
+			ref := a_ref
+			if not same_string_attribute (l_ref, a_ref) then
+				reset_fingerprint
+			end
+		ensure
+			ref_set: ref = a_ref
+		end
+
+	set_type (a_type: like type)
+			-- Set `type' with `a_type'.
+		require
+			type_valid: a_type /= Void implies valid_type (a_type)
+		local
+			l_type: like type
+		do
+			l_type := type
+			type := a_type
+			if l_type /= a_type then
+				reset_fingerprint
+			end
+		ensure
+			type_set: type = a_type
 		end
 
 	set_destinations (a_destinations: like destinations)
@@ -274,16 +309,19 @@ feature -- Access
 	source: detachable STRING_32 assign set_source
 			-- Source of the entry
 
+	ref: detachable STRING_32 assign set_ref
+			-- Fine grain reference of source
+
 	tags: detachable ARRAYED_LIST [STRING_32] assign set_tags
 			-- Tags of the entry
 
 	destinations: detachable ARRAYED_LIST [STRING_32] assign set_destinations
-			-- Fine grain destinations
+			-- Fine grain destinations of target
 
 	target_id: STRING
 			-- Id of the entry (from EB_SHARED_ID_SOLUTION)
 
-	type: INTEGER
+	type: INTEGER assign set_type
 			-- Type of relationship
 
 	parameters: detachable STRING_TABLE [STRING_32] assign set_parameters
@@ -368,6 +406,8 @@ feature {ANY} -- Relationship type
 	containment_type: INTEGER = 2
 	verify_type: INTEGER = 3
 	satisfy_type: INTEGER = 4
+
+	default_type: INTEGER = 0
 
 feature -- Comparison
 

@@ -13,7 +13,7 @@ feature -- Access
 		require
 			a_id_not_void: a_id /= Void
 		do
-			create Result.make (default_name, default_protocol, default_source, Void, Void, a_id, {EIS_ENTRY}.traceability_type, Void)
+			create Result.make (default_name, default_protocol, default_source, default_ref, Void, Void, a_id, {EIS_ENTRY}.default_type, Void)
 		end
 
 feature {NONE} -- Access
@@ -22,6 +22,7 @@ feature {NONE} -- Access
 	default_name: STRING_32 = "Unnamed"
 	default_source: STRING_32 = "http://www.yourwebsite.com"
 			-- Default source
+	default_ref: STRING_32 = ""
 
 note
 	copyright: "Copyright (c) 1984-2018, Eiffel Software"

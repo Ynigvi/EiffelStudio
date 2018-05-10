@@ -27,6 +27,7 @@ feature {NONE} -- Implementation
 											name: STRING_32;
 											protocol: STRING_32;
 											source: STRING_32;
+											ref: STRING_32;
 											destination: ARRAYED_LIST [STRING_32];
 											tags: ARRAYED_LIST [STRING_32];
 											id: STRING;
@@ -50,6 +51,10 @@ feature {NONE} -- Implementation
 				a_eis_tuple.protocol := a_value
 			elseif a_eis_tuple.source = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.source_string) then
 				a_eis_tuple.source := a_value
+			elseif a_eis_tuple.ref = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.ref_string) then
+				a_eis_tuple.ref := a_value
+			elseif a_eis_tuple.type = Void and then a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.type_string) then
+				a_eis_tuple.type := parse_type (a_value)
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.destination_string) then
 				a_eis_tuple.destination := parse_tags (a_value)
 			elseif a_key.is_case_insensitive_equal ({ES_EIS_TOKENS}.tag_string) then
@@ -81,6 +86,7 @@ feature {NONE} -- Implementation
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
+							ref: STRING_32;
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
@@ -97,7 +103,7 @@ feature {NONE} -- Implementation
 				create l_parameters.make (3)
 				create l_tags.make (2)
 				create l_destinations.make (2)
-				l_entry_tuple := [l_default, l_default, l_default, l_destinations, l_tags, a_eis_id, {EIS_ENTRY}.traceability_type, l_parameters, False]
+				l_entry_tuple := [l_default, l_default, l_default, l_default, l_destinations, l_tags, a_eis_id, {EIS_ENTRY}.default_type, l_parameters, False]
 				from
 					l_index_list.start
 				until
@@ -175,7 +181,7 @@ feature {NONE} -- Implementation
 						l_entry_tuple.destination.forth
 					end
 				end
-				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
+				create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.ref, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
 				Result.set_override (l_entry_tuple.override)
 				Result.set_source_pos ([l_source_pos, l_source_len])
 			end
@@ -193,6 +199,7 @@ feature {NONE} -- Implementation
 							name: STRING_32;
 							protocol: STRING_32;
 							source: STRING_32;
+							ref: STRING_32;
 							destination: ARRAYED_LIST [STRING_32];
 							tags: ARRAYED_LIST [STRING_32];
 							id: STRING;
@@ -242,9 +249,32 @@ feature {NONE} -- Implementation
 					if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 						l_entry_tuple.parameters := Void
 					end
-					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
+					create Result.make (l_entry_tuple.name, l_entry_tuple.protocol, l_entry_tuple.source, l_entry_tuple.ref, l_entry_tuple.destination, l_entry_tuple.tags, l_entry_tuple.id, l_entry_tuple.type, l_entry_tuple.parameters)
 				end
 			end
+		end
+
+	parse_type (a_type_string: STRING_32): INTEGER
+			-- Parse `a_type_string' and return the corresponding integer.
+			-- If not a valid type, default type is returned.
+		require
+			a_type_string_not_void: a_type_string /= Void
+		do
+			if a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.traceability_var_name) then
+				Result := {EIS_ENTRY}.traceability_type
+			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.refinement_var_name) then
+				Result := {EIS_ENTRY}.refinement_type
+			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.containment_var_name) then
+				Result := {EIS_ENTRY}.containment_type
+			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.verify_var_name) then
+				Result := {EIS_ENTRY}.verify_type
+			elseif a_type_string.is_case_insensitive_equal ({ES_EIS_TOKENS}.satisfy_var_name) then
+				Result := {EIS_ENTRY}.satisfy_type
+			else
+				Result := {EIS_ENTRY}.default_type
+			end
+		ensure
+			Result_not_void: Result /= Void
 		end
 
 	parse_tags (a_tag_string: STRING_32): ARRAYED_LIST [STRING_32]

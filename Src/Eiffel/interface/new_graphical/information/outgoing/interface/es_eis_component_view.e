@@ -343,6 +343,7 @@ feature {NONE} -- Initialization
 			l_grid.set_auto_resizing_column (column_destination, True)
 			l_grid.set_auto_resizing_column (column_protocol, True)
 			l_grid.set_auto_resizing_column (column_source, True)
+			l_grid.set_auto_resizing_column (column_ref, True)
 
 			l_column := l_grid.column (column_target)
 			l_column.set_title (interface_names.l_target)
@@ -359,6 +360,10 @@ feature {NONE} -- Initialization
 			l_column := l_grid.column (column_source)
 			l_grid.column (column_source).set_title (interface_names.l_source)
 			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_source, ?, ?, ?, ?, ?, ?, ?, ?))
+
+			l_column := l_grid.column (column_ref)
+			l_grid.column (column_ref).set_title (interface_names.l_ref)
+			register_action (l_column.header_item.pointer_button_press_actions, agent on_grid_header_click (column_ref, ?, ?, ?, ?, ?, ?, ?, ?))
 
 			l_column := l_grid.column (column_destination)
 			l_grid.column (column_destination).set_title (interface_names.l_destination)
@@ -505,6 +510,8 @@ feature {NONE} -- Events
 					Result := source_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_destination then
 					Result := destination_item_from_eis_entry (l_eis_entry, l_editable)
+				when column_ref then
+					Result := ref_item_from_eis_entry (l_eis_entry, l_editable)
 				when column_tags then
 						-- Tags
 					Result := tags_item_from_eis_entry (l_eis_entry, l_editable)
@@ -562,6 +569,16 @@ feature {NONE} -- Item callbacks
 
 	on_source_changed (a_value: READABLE_STRING_32; a_item: EV_GRID_ITEM)
 			-- On source changed
+		do
+		end
+
+	on_ref_changed (a_item: EV_GRID_EDITABLE_ITEM)
+			-- On ref changed
+		do
+		end
+
+	on_ref_assertion_changed (a_choice_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
+			-- On ref of type `assertion' changed
 		do
 		end
 
@@ -929,7 +946,11 @@ feature {NONE} -- Grid items
 			end
 			if a_editable then
 				create l_file_prop.make (once "", variable_provider_from_entry (a_entry))
-				l_file_prop.set_value (l_source)
+				if id_solution.id_valid (l_source) then
+					l_file_prop.set_value (id_solution.pretty_source_from_id (l_source, a_entry.target_id))
+				else
+					l_file_prop.set_value (l_source)
+				end
 				l_file_prop.change_value_actions.extend (agent on_source_changed (?, l_file_prop))
 				l_file_prop.set_text_validation_agent (agent is_source_valid (?, l_file_prop))
 				l_file_prop.key_press_actions.extend (agent tab_to_next)
@@ -953,6 +974,133 @@ feature {NONE} -- Grid items
 				Result := l_editable_item
 			else
 				create {EV_GRID_LABEL_ITEM} Result.make_with_text ("-")
+			end
+		ensure
+			Result_not_void: Result /= Void
+		end
+
+	ref_item_from_eis_entry (a_entry: EIS_ENTRY; a_editable: BOOLEAN): EV_GRID_ITEM
+			-- Grid item of ref from an EIS entry.
+		require
+			a_entry_not_void: a_entry /= Void
+		local
+			l_ref: STRING_32
+			l_editable_item: EB_GRID_LISTABLE_CHOICE_ITEM
+			l_editable_text_item: ES_EIS_GRID_EDITABLE_ITEM
+			l_feature: E_FEATURE
+			l_routine: ROUTINE_AS
+			l_classc: CLASS_C
+			l_tag: TAGGED_AS
+			l_type: NATURAL
+			l_line: EIFFEL_EDITOR_LINE
+			l_list: ARRAYED_LIST [EB_GRID_LISTABLE_CHOICE_ITEM_ITEM]
+			l_item_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+			l_e_com: EB_GRID_EDITOR_TOKEN_COMPONENT
+		do
+			if a_editable then
+				l_ref := a_entry.ref
+				if l_ref = Void then
+					create l_ref.make_empty
+				end
+				if a_entry.source /= Void and id_solution.id_valid (a_entry.source) then
+					create l_list.make (0)
+					l_editable_item := new_listable_item
+					l_editable_item.set_choice_list_key_press_action (agent tab_to_next)
+					l_type := id_solution.most_possible_type_of_id (a_entry.source)
+					l_tag := id_solution.assertion_of_id (l_ref)
+--					if l_tag = Void then
+--						if attached {E_FEATURE} id_solution.feature_of_id (a_entry.source) as lt_feature then
+--							modify_entry_in_feature (a_entry, a_entry, lt_feature)
+--						elseif attached {CLASS_I} id_solution.class_of_id (a_entry.source) as lt_class then
+--							modify_entry_in_class (a_entry, a_entry, lt_class)
+--						end
+--					end
+					if l_type = id_solution.feature_type then
+						l_feature := id_solution.feature_of_id (a_entry.source)
+						if l_feature /= Void then
+							l_routine ?= l_feature.ast.body.content
+							if attached l_routine.precondition as lt_precondition then
+								from
+									lt_precondition.assertions.start
+								until
+									lt_precondition.assertions.off
+								loop
+									l_ref := lt_precondition.assertions.item.tag.string_value_32
+									token_writer.new_line
+									token_writer.add (l_ref)
+									l_line := token_writer.last_line
+									create l_e_com.make (l_line.content, 0)
+									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+									l_item_item.set_data (lt_precondition.assertions.item)
+									l_list.extend (l_item_item)
+									if l_tag /= Void and then lt_precondition.assertions.item.is_equivalent (l_tag) then
+										l_editable_item.set_list_item (l_item_item)
+									end
+									lt_precondition.assertions.forth
+								end
+							end
+
+							if attached l_routine.postcondition as lt_postcondition then
+								from
+									lt_postcondition.assertions.start
+								until
+									lt_postcondition.assertions.off
+								loop
+									l_ref := lt_postcondition.assertions.item.tag.string_value_32
+									token_writer.new_line
+									token_writer.add (l_ref)
+									l_line := token_writer.last_line
+									create l_e_com.make (l_line.content, 0)
+									create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+									l_item_item.set_data (lt_postcondition.assertions.item)
+									l_list.extend (l_item_item)
+									if l_tag /= Void and then lt_postcondition.assertions.item.is_equivalent (l_tag) then
+										l_editable_item.set_list_item (l_item_item)
+									end
+									lt_postcondition.assertions.forth
+								end
+							end
+						end
+					elseif l_type = id_solution.class_type then
+						l_classc ?= id_solution.class_of_id (a_entry.source)
+						if attached l_classc.invariant_ast as lt_invariants then
+							from
+								lt_invariants.assertion_list.start
+							until
+								lt_invariants.assertion_list.off
+							loop
+								l_ref := lt_invariants.assertion_list.item.tag.string_value_32
+								token_writer.new_line
+								token_writer.add (l_ref)
+								l_line := token_writer.last_line
+								create l_e_com.make (l_line.content, 0)
+								create l_item_item.make (create {ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]}.make_from_array (<<l_e_com>>))
+								l_item_item.set_data (lt_invariants.assertion_list.item)
+								l_list.extend (l_item_item)
+								if l_tag /= Void and then lt_invariants.assertion_list.item.is_equivalent (l_tag) then
+									l_editable_item.set_list_item (l_item_item)
+								end
+								lt_invariants.assertion_list.forth
+							end
+						end
+					end
+					l_editable_item.set_item_components (l_list)
+
+					Result := l_editable_item
+					if l_editable_item.item_components /= Void and then l_editable_item.item_components.index_set.count > 1 then
+						l_editable_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_item))
+						l_editable_item.set_selection_changing_action (agent on_ref_assertion_changed (?, l_editable_item))
+					end
+				else
+					create l_editable_text_item.make_with_text (l_ref)
+					l_editable_text_item.pointer_button_press_actions.force_extend (agent activate_item (l_editable_text_item))
+					l_editable_text_item.set_text_validation_agent (agent is_parameters_valid (?, l_editable_text_item))
+					l_editable_text_item.deactivate_actions.extend (agent on_ref_changed (l_editable_text_item))
+					l_editable_text_item.set_key_press_action (agent tab_to_next)
+					Result := l_editable_text_item
+				end
+			else
+				create Result
 			end
 		ensure
 			Result_not_void: Result /= Void
@@ -1304,14 +1452,16 @@ feature {NONE} -- Implementation
 feature {NONE} -- Column constants
 
 	column_target: INTEGER = 1
-	column_source: INTEGER = 2
-	column_destination: INTEGER = 3
-	column_parameters: INTEGER = 4
-	column_protocol: INTEGER = 5
-	column_name: INTEGER = 6
-	column_tags: INTEGER = 7
-	column_override: INTEGER = 8
-	numbers_of_column: INTEGER = 8;
+	column_destination: INTEGER = 2
+	column_source: INTEGER = 3
+	column_ref: INTEGER = 4
+	column_parameters: INTEGER = 5
+	column_protocol: INTEGER = 6
+	column_name: INTEGER = 7
+	column_tags: INTEGER = 8
+	column_override: INTEGER = 9
+	numbers_of_column: INTEGER = 9;
+
 
 
 invariant

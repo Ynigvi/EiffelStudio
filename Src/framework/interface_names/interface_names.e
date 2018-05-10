@@ -822,7 +822,8 @@ feature -- Accelerator, focus label and menu name
 			Result := locale.formatted_string (locale.translation ("Setup stone handlers for tool %"$1%""), [l_tool_name])
 		end
 	l_source: STRING_32 do Result := locale.translation ("Source") end
-	l_destination: STRING_32 do Result := locale.translation ("Destination") end
+	l_destination: STRING_32 do Result := locale.translation ("Destinations") end
+	l_ref: STRING_32 do Result := locale.translation ("Reference") end
 	l_stone_name: STRING_32 do Result := locale.translation ("Stone name") end
 	l_features_selected (a_selected_count: INTEGER): STRING_32 do Result := locale.formatted_string (locale.plural_translation ("$1 feature selected.", "$1 features selected", a_selected_count), [a_selected_count]) end
 	l_feature_stone_name: STRING_32 do Result := locale.translation ("Feature stone") end

@@ -643,6 +643,8 @@ feature -- Querry
 					Result := class_of_id (a_id) /= Void
 				when feature_type then
 					Result := feature_of_id (a_id) /= Void
+				when assertion_type then
+					Result := assertion_of_id (a_id) /= Void
 				else
 				end
 			end
@@ -725,7 +727,7 @@ feature -- ID type
 	feature_type: NATURAL = 5
 	assertion_type: NATURAL = 6
 	min_type: NATURAL once Result := target_type end
-	max_type: NATURAL once Result := feature_type end
+	max_type: NATURAL once Result := assertion_type end
 
 feature {NONE} -- Access
 

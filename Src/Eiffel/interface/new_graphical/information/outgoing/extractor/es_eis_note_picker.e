@@ -170,6 +170,9 @@ feature {NONE} -- Implementation
 				end
 				if l_entry_tuple.source /= Void and not (l_entry_tuple.source.has ('\') or l_entry_tuple.source.has ('/')) then
 					l_entry_tuple.source := id_solution.id_from_source (l_entry_tuple.source, l_entry_tuple.id)
+					if l_entry_tuple.ref /= Void then
+						l_entry_tuple.ref := id_solution.id_of_string_tag (l_entry_tuple.source, l_entry_tuple.ref)
+					end
 				end
 				if l_entry_tuple.destination /= Void then
 					from
@@ -245,6 +248,9 @@ feature {NONE} -- Implementation
 					end
 					if l_entry_tuple.source /= Void and not (l_entry_tuple.source.has ('\') or l_entry_tuple.source.has ('/')) then
 						l_entry_tuple.source := id_solution.id_from_source (l_entry_tuple.source, l_entry_tuple.id)
+						if l_entry_tuple.ref /= Void then
+							l_entry_tuple.ref := id_solution.id_of_string_tag (l_entry_tuple.source, l_entry_tuple.ref)
+						end
 					end
 					if l_entry_tuple.parameters /= Void and then l_entry_tuple.parameters.is_empty then
 						l_entry_tuple.parameters := Void

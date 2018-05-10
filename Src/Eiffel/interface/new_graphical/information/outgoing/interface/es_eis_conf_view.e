@@ -21,6 +21,8 @@ inherit
 			on_name_changed,
 			on_protocol_changed,
 			on_source_changed,
+			on_ref_changed,
+			on_ref_assertion_changed,
 			on_tags_changed,
 			on_parameters_changed
 		end
@@ -407,6 +409,80 @@ feature {NONE} -- Callbacks
 							end
 						end
 					end
+				end
+			end
+		end
+
+	on_ref_changed (a_item: EV_GRID_EDITABLE_ITEM)
+			-- On ref changed
+			-- We modify neither the referenced EIS entry when the modification is done.
+		local
+			l_new_entry: EIS_ENTRY
+			l_ref: STRING_32
+		do
+			if attached {EIS_ENTRY} a_item.row.data as lt_entry and then attached a_item.text as lt_value then
+				create l_ref.make_from_string (lt_value)
+				l_ref.right_adjust
+				l_ref.left_adjust
+				if lt_entry.ref /= Void and then l_ref.is_equal (lt_entry.ref) then
+						-- Do nothing when the ref is not actually changed
+				else
+					if entry_editable (lt_entry, False) then
+						if attached system_of_conf_notable (conf_notable) as lt_system then
+							if attached lt_entry.twin as lt_new_entry then
+								l_new_entry := lt_new_entry
+							end
+							l_new_entry.set_ref (l_ref)
+							modify_entry_in_conf (lt_entry, l_new_entry, conf_notable, lt_system)
+								-- Modify the ref in the entry when the modification is done
+							if last_entry_modified then
+								storage.deregister_entry (lt_entry, component_id)
+								lt_entry.set_ref (l_ref)
+								storage.register_entry (lt_entry, component_id, lt_system.file_date)
+							end
+						end
+					end
+				end
+			end
+		end
+
+	on_ref_assertion_changed (a_item: EB_GRID_LISTABLE_CHOICE_ITEM_ITEM; a_grid_item: EB_GRID_LISTABLE_CHOICE_ITEM): BOOLEAN
+			-- On ref of type `Assertion' changed
+			-- We modify neither the referenced EIS entry when the modification is done.
+		local
+			l_new_entry: EIS_ENTRY
+			l_ref: STRING_32
+			l_assertion: STRING
+			l_done: BOOLEAN
+		do
+			if attached {EIS_ENTRY} a_grid_item.row.data as lt_entry then
+				if entry_editable (lt_entry, False) then
+					if attached {TAGGED_AS} a_item.data as lt_assertion then
+						if attached {E_FEATURE} id_solution.feature_of_id (lt_entry.source) as lt_feature then
+							if attached {EIS_ENTRY} lt_entry.twin as lt_new_entry then
+								l_new_entry := lt_new_entry
+							end
+							l_assertion := id_solution.id_of_assertion (lt_feature, lt_assertion)
+							l_new_entry.set_ref (l_assertion)
+--							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
+							l_done := True
+
+						elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.source) as lt_class then
+							if attached lt_entry.twin as lt_new_entry1 then
+								l_new_entry := lt_new_entry1
+							end
+							l_assertion := id_solution.id_of_invariant (lt_class.config_class, lt_assertion)
+							l_new_entry.set_ref (l_assertion)
+--							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
+							l_done := True
+						end
+					end
+				end
+			end
+
+			if l_done then
+				if attached system_of_conf_notable (conf_notable) as lt_system then
+					storage.register_entry (l_new_entry, component_id, lt_system.file_date)
 				end
 			end
 		end

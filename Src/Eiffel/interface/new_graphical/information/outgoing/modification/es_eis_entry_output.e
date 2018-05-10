@@ -56,6 +56,35 @@ feature -- Operation
 					end
 					l_comma_needed := True
 				end
+				if attached a_entry.ref as l_ref and then not l_ref.is_empty then
+					if attached a_entry.source as l_source then
+						if id_solution.id_valid (l_source) then
+							if id_solution.id_valid (l_ref) then
+								if l_comma_needed then
+									l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
+									l_output.append_character ({ES_EIS_TOKENS}.space)
+								end
+								l_output.append (quoted_string ({ES_EIS_TOKENS}.ref_string + {ES_EIS_TOKENS}.value_assignment + id_solution.assertion_of_id (l_ref).tag.name_32))
+							end
+						else
+							if not id_solution.id_valid (l_ref) then
+								if l_comma_needed then
+									l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
+									l_output.append_character ({ES_EIS_TOKENS}.space)
+								end
+								l_output.append (quoted_string ({ES_EIS_TOKENS}.ref_string + {ES_EIS_TOKENS}.value_assignment + l_ref))
+							end
+						end
+					else
+						if not id_solution.id_valid (l_ref) then
+							if l_comma_needed then
+								l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)
+								l_output.append_character ({ES_EIS_TOKENS}.space)
+							end
+							l_output.append (quoted_string ({ES_EIS_TOKENS}.ref_string + {ES_EIS_TOKENS}.value_assignment + l_ref))
+						end
+					end
+				end
 				if attached a_entry.destinations as l_destination and then not l_destination.is_empty then
 					if l_comma_needed then
 						l_output.append_character ({ES_EIS_TOKENS}.attribute_separator)

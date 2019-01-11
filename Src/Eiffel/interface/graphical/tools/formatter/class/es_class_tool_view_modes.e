@@ -27,6 +27,9 @@ feature -- Access
 	flat_short: NATURAL_8 = 0x04
 			-- Flat short mode
 
+	doc: NATURAL_8 = 0x05
+			-- Documentation mode
+
 	ancestors: NATURAL_8 = 0x10
 			-- Class ancestors mode
 
@@ -82,6 +85,7 @@ feature -- Query
 				a_mode = flat or else
 				a_mode = short or else
 				a_mode = flat_short or else
+				a_mode = doc or else
 				a_mode = ancestors or else
 				a_mode = descendents or else
 				a_mode = clients or else
@@ -98,7 +102,7 @@ feature -- Query
 		end
 
 ;note
-	copyright:	"Copyright (c) 1984-2017, Eiffel Software"
+	copyright:	"Copyright (c) 1984-2019, Eiffel Software"
 	license:	"GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options:	"http://www.eiffel.com/licensing"
 	copying: "[

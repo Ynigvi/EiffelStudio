@@ -612,6 +612,10 @@ feature -- Command
 			create {EB_FLAT_SHORT_FORMATTER} l_form.make (develop_window)
 			setup_main_formatter (l_form, "interface_view")
 			l_managed_main_formatters.extend (l_form)
+
+			create {EB_DOCUMENTATION_FORMATTER} l_form.make (develop_window)
+			setup_main_formatter (l_form, "documentation_view")
+			l_managed_main_formatters.extend (l_form)
 		end
 
 	end_build_formatters
@@ -1116,7 +1120,7 @@ feature{NONE} -- Implementation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2018, Eiffel Software"
+	copyright: "Copyright (c) 1984-2019, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

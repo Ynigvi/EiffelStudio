@@ -210,6 +210,7 @@ feature {NONE} -- Modifiable shortcuts
 			l_hash.put ([False, True, True, key_strings.item (Key_f).twin.as_string_8], "flat_view")
 			l_hash.put ([False, True, True, key_strings.item (Key_o).twin.as_string_8], "contract_view")
 			l_hash.put ([False, True, True, key_strings.item (Key_i).twin.as_string_8], "interface_view")
+			l_hash.put ([False, True, True, key_strings.item (Key_d).twin.as_string_8], "documentation_view")
 			l_hash.put ([True, False, False, key_strings.item (key_left).twin.as_string_8], "go_back")
 			l_hash.put ([True, False, False, key_strings.item (key_right).twin.as_string_8], "go_forth")
 			Result.extend ([l_hash, main_window_group])
@@ -265,7 +266,7 @@ invariant
 	preferences_not_void: preferences /= Void
 
 note
-	copyright: "Copyright (c) 1984-2017, Eiffel Software"
+	copyright: "Copyright (c) 1984-2019, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

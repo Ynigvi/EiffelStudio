@@ -49,7 +49,7 @@ feature {NONE}
 				if not is_dotnet_mode then
 					editor.handle_before_processing (false)
 					if associated_class /= Void then
-						last_was_error := short_context_text (associated_class, editor.text_displayed)
+						last_was_error := documentation_context_text (associated_class, editor.text_displayed)
 					end
 					editor.handle_after_processing
 				else

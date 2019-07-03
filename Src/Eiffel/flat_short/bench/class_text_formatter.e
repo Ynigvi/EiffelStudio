@@ -122,6 +122,9 @@ feature -- Output
 			if is_for_documentation then
 				f.set_for_documentation (documentation)
 			end
+			if is_documentation_only then
+				f.set_documentation_only
+			end
 			f.execute;
 			error := f.execution_error
 		end;
@@ -155,7 +158,7 @@ feature {NONE} -- Implementation
 	documentation: DOCUMENTATION_ROUTINES;
 
 note
-	copyright:	"Copyright (c) 1984-2018, Eiffel Software"
+	copyright:	"Copyright (c) 1984-2019, Eiffel Software"
 	license:	"GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options:	"http://www.eiffel.com/licensing"
 	copying: "[

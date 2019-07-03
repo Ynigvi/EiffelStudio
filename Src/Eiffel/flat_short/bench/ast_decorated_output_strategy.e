@@ -701,26 +701,79 @@ feature {NONE} -- Implementation
 
 			if not expr_type_visiting then
 				if l_text_formatter_decorator.is_documentation_only then
-					l_class_name := l_as.string_value_32.substring (l_as.string_value_32.index_of ('{', 1)+1, l_as.string_value_32.index_of ('}', 1)-1)
+					l_text_formatter_decorator.put_string_item (l_as.value_32)
+				else
+					l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
+				end
+			end
+		end
+
+	process_string_as_doc (l_as: STRING_AS)
+		require
+			documentation_only: text_formatter_decorator /= Void and then text_formatter_decorator.is_documentation_only
+		local
+			l_text_formatter_decorator: like text_formatter_decorator
+			l_class_i: CLASS_I
+			l_class: CLASS_C
+			l_class_name: STRING
+			l_feature_name: STRING
+			l_string_to_print: STRING
+			l_is_first: BOOLEAN
+		do
+			l_text_formatter_decorator := text_formatter_decorator
+			if not expr_type_visiting and then l_as.is_once_string then
+				l_text_formatter_decorator.process_keyword_text (ti_once_keyword, Void)
+				l_text_formatter_decorator.put_space
+			end
+
+			if attached l_as.type as l_type then
+				if not expr_type_visiting then
+					l_text_formatter_decorator.process_symbol_text (ti_l_curly)
+				end
+				l_type.process (Current)
+				if not expr_type_visiting then
+					l_text_formatter_decorator.process_symbol_text (ti_r_curly)
+				end
+			else
+				last_type := string_type
+			end
+
+			if not expr_type_visiting then
+				if l_as.value.as_lower.same_string ("true") then
+					l_string_to_print := feature_documentation_process (current_feature.feature_name, current_class)
+					if l_string_to_print.is_empty then
+						l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
+					else
+						l_text_formatter_decorator.indent
+						l_is_first := True
+						across l_string_to_print.split ('%N') as lt_str_part loop
+							if not l_is_first then
+								l_text_formatter_decorator.put_new_line
+							end
+							l_is_first := False
+							l_text_formatter_decorator.put_string_item (lt_str_part.item)
+						end
+						l_text_formatter_decorator.exdent
+					end
+				else
+					l_class_name := l_as.value_32.substring (l_as.value_32.index_of ('{', 1)+1, l_as.value_32.index_of ('}', 1)-1)
 					if l_class_name.is_empty then
 						l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
 					else
 						l_class_i := universe.safe_class_named (l_class_name, current_class.group)
 						if l_class_i /= Void then
 							l_class := l_class_i.compiled_class
-							l_text_formatter_decorator.put_string_item (l_class.name)
-							l_feature_name := l_as.string_value_32.substring (l_as.string_value_32.index_of ('.', 1)+1, l_as.string_value_32.count-1)
-							l_text_formatter_decorator.put_string_item ("."+l_feature_name)
-							l_text_formatter_decorator.put_new_line
-
+							l_feature_name := l_as.value_32.substring (l_as.value_32.index_of ('.', 1)+1, l_as.value_32.count)
+							
 							l_string_to_print := feature_documentation_process (l_feature_name, l_class)
 							if l_string_to_print.is_empty then
 								l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
 							else
+								l_text_formatter_decorator.put_string_item ("{"+l_class.name+"}."+l_feature_name)
 								l_text_formatter_decorator.indent
 								across l_string_to_print.split ('%N') as lt_str_part loop
-									l_text_formatter_decorator.put_string_item (lt_str_part.item)
 									l_text_formatter_decorator.put_new_line
+									l_text_formatter_decorator.put_string_item (lt_str_part.item)
 								end
 								l_text_formatter_decorator.exdent
 							end
@@ -728,8 +781,6 @@ feature {NONE} -- Implementation
 							l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
 						end
 					end
-				else
-					l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
 				end
 			end
 		end
@@ -742,7 +793,10 @@ feature {NONE} -- Implementation
 			l_text_formatter_decorator: like text_formatter_decorator
 		do
 			l_text_formatter_decorator := text_formatter_decorator
-			if attached {DO_AS} a_class.feature_named (a_feature_name).body.body.as_routine.routine_body as lt_as then
+			Result := ""
+			if attached a_class.feature_named (a_feature_name) and then
+				attached a_class.feature_named (a_feature_name).body.body.as_routine and then
+				attached {DO_AS} a_class.feature_named (a_feature_name).body.body.as_routine.routine_body as lt_as then
 				across lt_as.compound as lt_inst loop
 					if attached {ASSIGN_AS} lt_inst.item as lt_ass and then attached {RESULT_AS} lt_ass.target as lt_res then
 						Result := documentation_process (lt_ass.source, a_class)
@@ -1567,6 +1621,157 @@ feature {NONE} -- Implementation
 			end
 		end
 
+	process_index_as_list_doc (l_as: EIFFEL_LIST [AST_EIFFEL])
+		require
+			documentation_only: text_formatter_decorator /= Void and then text_formatter_decorator.is_documentation_only
+		local
+			i, j, l_count: INTEGER
+			failure, l_stop: BOOLEAN
+			not_first: BOOLEAN
+			l_text_formatter_decorator: like text_formatter_decorator
+			l_res: STRING_TABLE [EIFFEL_LIST [ATOMIC_AS]]
+			l_relations: ARRAY [STRING]
+		do
+			l_text_formatter_decorator := text_formatter_decorator
+			create l_res.make (5)
+			l_relations := << "belongs", "repeats", "contradicts", "follows", "extends", "excepts", "constrains", "characterizes" >>
+
+			from
+				i := 1
+				l_count := l_as.count
+			until
+				i > l_count or failure
+			loop
+				if attached {INDEX_AS} l_as.i_th (i) as lt_as and then lt_as.tag /= Void then
+					if lt_as.tag.name_32.as_lower.same_string ("doc") then
+						l_res.put (lt_as.index_list, "doc")
+					elseif lt_as.tag.name_32.as_lower.same_string ("type") then
+						l_res.put (lt_as.index_list, "type")
+					else
+						from
+							j := 1
+							l_stop := False
+						until
+							l_stop or j > l_relations.count
+						loop
+							if lt_as.tag.name_32.as_lower.same_string (l_relations.at (j)) then
+								l_res.put (lt_as.index_list, l_relations.at (j))
+								l_stop := True
+							end
+							j := j + 1
+						end
+					end
+				elseif attached {STRING_AS} l_as.i_th (i) as lt_str_as then
+					lt_str_as.process (Current)
+				end
+				i := i + 1
+			end
+
+			if not expr_type_visiting then
+				l_text_formatter_decorator.new_expression
+				l_text_formatter_decorator.begin
+			end
+			if l_res.count > 0 then
+				l_text_formatter_decorator.process_keyword_text (ti_note_keyword, Void)
+				l_text_formatter_decorator.indent
+				if l_res.has_key ("type") then
+					l_text_formatter_decorator.put_new_line
+					l_text_formatter_decorator.process_indexing_tag_text ("type")
+					l_text_formatter_decorator.set_without_tabs
+					l_text_formatter_decorator.process_symbol_text (ti_colon)
+					l_text_formatter_decorator.put_space
+					l_text_formatter_decorator.set_in_indexing_clause (True)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
+					l_text_formatter_decorator.set_space_between_tokens
+					l_text_formatter_decorator.set_separator (ti_comma)
+					process_eiffel_list_doc (l_res.found_item, False)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
+					l_text_formatter_decorator.set_in_indexing_clause (False)
+				end
+				across l_relations as lt_rel_type loop
+					if l_res.has_key (lt_rel_type.item) then
+						l_text_formatter_decorator.put_new_line
+						l_text_formatter_decorator.process_indexing_tag_text (lt_rel_type.item)
+						l_text_formatter_decorator.set_without_tabs
+						l_text_formatter_decorator.process_symbol_text (ti_colon)
+						l_text_formatter_decorator.put_space
+						l_text_formatter_decorator.set_in_indexing_clause (True)
+						l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
+						l_text_formatter_decorator.set_space_between_tokens
+						l_text_formatter_decorator.set_separator (ti_comma)
+						process_eiffel_list_doc (l_res.found_item, False)
+						l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
+						l_text_formatter_decorator.set_in_indexing_clause (False)
+					end
+				end
+				if l_res.has_key ("doc") then
+					l_text_formatter_decorator.put_new_line
+					l_text_formatter_decorator.process_indexing_tag_text ("doc")
+					l_text_formatter_decorator.set_without_tabs
+					l_text_formatter_decorator.process_symbol_text (ti_colon)
+					l_text_formatter_decorator.put_space
+					l_text_formatter_decorator.set_in_indexing_clause (True)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
+					l_text_formatter_decorator.set_space_between_tokens
+					l_text_formatter_decorator.set_separator (ti_comma)
+					process_eiffel_list_doc (l_res.found_item, True)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
+					l_text_formatter_decorator.set_in_indexing_clause (False)
+				end
+				l_text_formatter_decorator.exdent
+				l_text_formatter_decorator.put_new_line
+				l_text_formatter_decorator.process_keyword_text (ti_end_keyword, Void)
+			end
+			if not expr_type_visiting then
+				l_text_formatter_decorator.commit
+			end
+		end
+
+	process_eiffel_list_doc (l_as: EIFFEL_LIST [AST_EIFFEL]; l_interpret: BOOLEAN)
+		require
+			documentation_only: text_formatter_decorator /= Void and then text_formatter_decorator.is_documentation_only
+		local
+			i, l_count: INTEGER
+			failure: BOOLEAN
+			not_first: BOOLEAN
+			l_text_formatter_decorator: like text_formatter_decorator
+		do
+			l_text_formatter_decorator := text_formatter_decorator
+			if not expr_type_visiting then
+				l_text_formatter_decorator.begin
+			end
+
+			from
+				i := 1
+				l_count := l_as.count
+			until
+				i > l_count or failure
+			loop
+				if not expr_type_visiting then
+					if not_first then
+						l_text_formatter_decorator.put_separator
+					end
+					l_text_formatter_decorator.new_expression
+					l_text_formatter_decorator.begin
+				end
+				if attached {STRING_AS} l_as.i_th (i) as lt_str_as then
+					if l_interpret then
+						process_string_as_doc (lt_str_as)
+					else
+						lt_str_as.process (Current)
+					end
+				end
+				if not expr_type_visiting then
+					l_text_formatter_decorator.commit
+				end
+				not_first := True
+				i := i + 1
+			end
+			if not expr_type_visiting then
+				l_text_formatter_decorator.commit
+			end
+		end
+
 	process_indexing_clause_as (l_as: INDEXING_CLAUSE_AS)
 		local
 			l_text_formatter_decorator: like text_formatter_decorator
@@ -1587,7 +1792,11 @@ feature {NONE} -- Implementation
 				l_text_formatter_decorator.set_separator (Void)
 				l_text_formatter_decorator.set_new_line_between_tokens
 			end
-			process_eiffel_list (l_as)
+			if l_text_formatter_decorator.is_documentation_only then
+				process_index_as_list_doc (l_as)
+			else
+				process_eiffel_list (l_as)
+			end
 			if not l_text_formatter_decorator.is_documentation_only then
 				l_text_formatter_decorator.process_filter_item (f_indexing, False)
 				l_text_formatter_decorator.exdent
@@ -4008,44 +4217,21 @@ feature {NONE} -- Implementation
 			check
 				not_expr_type_visiting: not expr_type_visiting
 			end
-			if l_text_formatter_decorator.is_documentation_only then
-				if l_as.tag /= Void and then l_as.tag.name_32.as_lower.same_string ("doc") then
-					l_text_formatter_decorator.process_keyword_text (ti_note_keyword, Void)
-					l_text_formatter_decorator.indent
-					l_text_formatter_decorator.put_new_line
-					l_text_formatter_decorator.process_indexing_tag_text (l_as.tag.name_32)
-					l_text_formatter_decorator.set_without_tabs
-					l_text_formatter_decorator.process_symbol_text (ti_colon)
-					l_text_formatter_decorator.put_space
 
-					l_text_formatter_decorator.set_in_indexing_clause (True)
-					l_text_formatter_decorator.search_eis_entry_in_note_clause (l_as, current_class.original_class, source_feature)
-					l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
-					l_text_formatter_decorator.set_space_between_tokens
-					l_text_formatter_decorator.set_separator (ti_comma)
-					l_as.index_list.process (Current)
-					l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
-					l_text_formatter_decorator.set_in_indexing_clause (False)
-					l_text_formatter_decorator.put_new_line
-					l_text_formatter_decorator.exdent
-					l_text_formatter_decorator.process_keyword_text (ti_end_keyword, Void)
-				end
-			else
-				if l_as.tag /= Void then
-					l_text_formatter_decorator.process_indexing_tag_text (l_as.tag.name_32)
-					l_text_formatter_decorator.set_without_tabs
-					l_text_formatter_decorator.process_symbol_text (ti_colon)
-					l_text_formatter_decorator.put_space
-				end
-				l_text_formatter_decorator.set_in_indexing_clause (True)
-				l_text_formatter_decorator.search_eis_entry_in_note_clause (l_as, current_class.original_class, source_feature)
-				l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
-				l_text_formatter_decorator.set_space_between_tokens
-				l_text_formatter_decorator.set_separator (ti_comma)
-				l_as.index_list.process (Current)
-				l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
-				l_text_formatter_decorator.set_in_indexing_clause (False)
+			if l_as.tag /= Void then
+				l_text_formatter_decorator.process_indexing_tag_text (l_as.tag.name_32)
+				l_text_formatter_decorator.set_without_tabs
+				l_text_formatter_decorator.process_symbol_text (ti_colon)
+				l_text_formatter_decorator.put_space
 			end
+			l_text_formatter_decorator.set_in_indexing_clause (True)
+			l_text_formatter_decorator.search_eis_entry_in_note_clause (l_as, current_class.original_class, source_feature)
+			l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
+			l_text_formatter_decorator.set_space_between_tokens
+			l_text_formatter_decorator.set_separator (ti_comma)
+			l_as.index_list.process (Current)
+			l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
+			l_text_formatter_decorator.set_in_indexing_clause (False)
 		end
 
 	process_export_item_as (l_as: EXPORT_ITEM_AS)

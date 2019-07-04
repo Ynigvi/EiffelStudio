@@ -764,7 +764,7 @@ feature {NONE} -- Implementation
 						if l_class_i /= Void then
 							l_class := l_class_i.compiled_class
 							l_feature_name := l_as.value_32.substring (l_as.value_32.index_of ('.', 1)+1, l_as.value_32.count)
-							
+
 							l_string_to_print := feature_documentation_process (l_feature_name, l_class)
 							if l_string_to_print.is_empty then
 								l_text_formatter_decorator.put_string_item_with_as (l_as.string_value_32, l_as)
@@ -1647,6 +1647,8 @@ feature {NONE} -- Implementation
 						l_res.put (lt_as.index_list, "doc")
 					elseif lt_as.tag.name_32.as_lower.same_string ("type") then
 						l_res.put (lt_as.index_list, "type")
+					elseif lt_as.tag.name_32.as_lower.same_string ("eis") then
+						l_res.put (lt_as.index_list, "eis")
 					else
 						from
 							j := 1
@@ -1688,6 +1690,20 @@ feature {NONE} -- Implementation
 					l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
 					l_text_formatter_decorator.set_in_indexing_clause (False)
 				end
+				if l_res.has_key ("eis") then
+					l_text_formatter_decorator.put_new_line
+					l_text_formatter_decorator.process_indexing_tag_text ("EIS")
+					l_text_formatter_decorator.set_without_tabs
+					l_text_formatter_decorator.process_symbol_text (ti_colon)
+					l_text_formatter_decorator.put_space
+					l_text_formatter_decorator.set_in_indexing_clause (True)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, True)
+					l_text_formatter_decorator.set_space_between_tokens
+					l_text_formatter_decorator.set_separator (ti_comma)
+					process_eis_list_doc (l_res.found_item)
+					l_text_formatter_decorator.process_filter_item (f_indexing_content, False)
+					l_text_formatter_decorator.set_in_indexing_clause (False)
+				end
 				across l_relations as lt_rel_type loop
 					if l_res.has_key (lt_rel_type.item) then
 						l_text_formatter_decorator.put_new_line
@@ -1726,6 +1742,111 @@ feature {NONE} -- Implementation
 				l_text_formatter_decorator.commit
 			end
 		end
+
+	process_eis_list_doc (l_as: EIFFEL_LIST [AST_EIFFEL])
+		require
+			documentation_only: text_formatter_decorator /= Void and then text_formatter_decorator.is_documentation_only
+		local
+			i, l_count: INTEGER
+			failure: BOOLEAN
+			not_first: BOOLEAN
+			l_text_formatter_decorator: like text_formatter_decorator
+			l_res: STRING_TABLE [STRING]
+			l_str_split: LIST [STRING_32]
+			l_file: PLAIN_TEXT_FILE
+			l_content, l_substring: STRING
+			l_regex, l_title_regex, l_section_regex: RX_PCRE_MATCHER
+		do
+			l_text_formatter_decorator := text_formatter_decorator
+			create l_res.make (3)
+			if not expr_type_visiting then
+				l_text_formatter_decorator.begin
+			end
+
+			from
+				i := 1
+				l_count := l_as.count
+			until
+				i > l_count or failure
+			loop
+				if attached {STRING_AS} l_as.i_th (i) as lt_str_as and then not lt_str_as.value_32.is_empty then
+					l_str_split := lt_str_as.value_32.split ('=')
+					if l_str_split.count = 2 then
+						l_res.put (l_str_split.at (2), l_str_split.at (1))
+					else
+						process_eiffel_list_doc (l_as, False)
+					end
+				end
+				not_first := True
+				i := i + 1
+			end
+
+			if l_res.count > 0 then
+				if l_res.has_key ("src") then
+					l_text_formatter_decorator.put_string_item (l_res.found_item)
+					if l_res.has_key ("protocol") then
+						if l_res.found_item.as_lower.same_string ("docx") then
+							if l_res.has_key ("bookmark") then
+								create l_file.make_open_read (l_res.at ("src"))
+								create l_regex.make
+								create l_title_regex.make
+								create l_section_regex.make
+								create l_content.make_empty
+
+								l_text_formatter_decorator.put_string_item (" (at bookmark %""+l_res.found_item+"%")")
+
+								from
+									l_file.read_character
+								until
+									l_file.exhausted
+								loop
+									l_content.append_character (l_file.last_character)
+									l_file.read_character
+								end
+
+								l_file.close
+
+								l_regex.set_greedy (false)
+								l_title_regex.set_greedy (false)
+								l_section_regex.set_greedy (false)
+								l_regex.compile ("<w:bookmarkStart w:id=%".*%" w:name=%""+l_res.found_item+"%"/>")
+								l_title_regex.compile ("<w:t>(.+)</w:t>")
+								l_section_regex.compile ("<w:t>(.+)</w:t>")
+
+								l_regex.match (l_content)
+								if l_regex.has_matched then
+									l_substring := l_content.substring (l_regex.captured_end_position (0), l_content.count)
+									l_title_regex.match (l_substring)
+									if l_title_regex.has_matched then
+										l_text_formatter_decorator.begin
+										l_text_formatter_decorator.indent
+										l_text_formatter_decorator.put_new_line
+										l_text_formatter_decorator.put_string_item ("%"")
+										l_text_formatter_decorator.put_string_item (l_title_regex.captured_substring (1))
+										l_substring := l_substring.substring (l_title_regex.captured_end_position (1), l_substring.count)
+										l_section_regex.match (l_substring)
+										if l_section_regex.has_matched then
+											l_text_formatter_decorator.put_new_line
+											l_substring := l_section_regex.captured_substring (1)
+											l_substring.replace_substring_all (". ", ".%N")
+											across l_substring.split ('%N') as lt_sentence loop
+												l_text_formatter_decorator.put_new_line
+												l_text_formatter_decorator.put_string_item (lt_sentence.item)
+											end
+										end
+										l_text_formatter_decorator.put_string_item ("%"")
+										l_text_formatter_decorator.commit
+									end
+								end
+							end
+						end
+					end
+				else
+					process_eiffel_list_doc (l_as, False)
+				end
+			end
+		end
+
 
 	process_eiffel_list_doc (l_as: EIFFEL_LIST [AST_EIFFEL]; l_interpret: BOOLEAN)
 		require

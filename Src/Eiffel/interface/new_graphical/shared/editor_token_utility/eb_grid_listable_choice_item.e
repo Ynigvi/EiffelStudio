@@ -57,12 +57,16 @@ feature -- Element change
 				remove_component (1)
 				i := i + 1
 			end
-			a_item.item_components.do_all (
-				agent (aa_component: ES_GRID_ITEM_COMPONENT)
-					do
-						aa_component.set_grid_item (Void)
-						append_component (aa_component)
-					end)
+			across a_item.item_components as lt_it_comp loop
+				lt_it_comp.item.set_grid_item (Void)
+				append_component (lt_it_comp.item)
+			end
+--			a_item.item_components.do_all (
+--				agent (aa_component: ES_GRID_ITEM_COMPONENT)
+--					do
+--						aa_component.set_grid_item (Void)
+--						append_component (aa_component)
+--					end)
 			selected_item_internal := a_item
 		end
 
@@ -449,7 +453,7 @@ invariant
 	choice_list_parented_during_activation: choice_list /= Void implies choice_list.parent /= Void
 
 note
-	copyright: "Copyright (c) 1984-2018, Eiffel Software"
+	copyright: "Copyright (c) 1984-2019, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

@@ -1634,7 +1634,7 @@ feature {NONE} -- Implementation
 		do
 			l_text_formatter_decorator := text_formatter_decorator
 			create l_res.make (5)
-			l_relations := << "belongs", "repeats", "contradicts", "follows", "extends", "excepts", "constrains", "characterizes" >>
+			l_relations := << "belongs", "repeats", "contradicts", "follows", "extends", "excepts", "constrains", "characterizes", "refines" >>
 
 			from
 				i := 1
@@ -1754,8 +1754,10 @@ feature {NONE} -- Implementation
 			l_res: STRING_TABLE [STRING]
 			l_str_split: LIST [STRING_32]
 			l_file: PLAIN_TEXT_FILE
-			l_content, l_substring: STRING
+			l_content, l_substring, l_string_to_print: STRING
 			l_regex, l_title_regex, l_section_regex: RX_PCRE_MATCHER
+			l_parser: XM_PARSER
+			l_consumer: DOCX_CALLBACKS
 		do
 			l_text_formatter_decorator := text_formatter_decorator
 			create l_res.make (3)
@@ -1810,30 +1812,31 @@ feature {NONE} -- Implementation
 								l_title_regex.set_greedy (false)
 								l_section_regex.set_greedy (false)
 								l_regex.compile ("<w:bookmarkStart w:id=%".*%" w:name=%""+l_res.found_item+"%"/>")
-								l_title_regex.compile ("<w:t>(.+)</w:t>")
-								l_section_regex.compile ("<w:t>(.+)</w:t>")
+								l_title_regex.compile ("<w:p>(.+)</w:p>")
 
 								l_regex.match (l_content)
 								if l_regex.has_matched then
 									l_substring := l_content.substring (l_regex.captured_end_position (0), l_content.count)
 									l_title_regex.match (l_substring)
 									if l_title_regex.has_matched then
+										l_substring := l_title_regex.captured_substring (0)
+										create {XM_EIFFEL_PARSER} l_parser.make
+										create {DOCX_CALLBACKS} l_consumer.make
+										l_parser.set_callbacks (l_consumer)
+
+										l_parser.parse_from_string (l_substring)
+										l_string_to_print := ""
+										if l_parser.is_correct then
+											l_string_to_print := l_consumer.content
+										else
+											l_string_to_print := "Ill-formed DOCX document: " + l_parser.last_error_extended_description
+										end
+
 										l_text_formatter_decorator.begin
 										l_text_formatter_decorator.indent
 										l_text_formatter_decorator.put_new_line
 										l_text_formatter_decorator.put_string_item ("%"")
-										l_text_formatter_decorator.put_string_item (l_title_regex.captured_substring (1))
-										l_substring := l_substring.substring (l_title_regex.captured_end_position (1), l_substring.count)
-										l_section_regex.match (l_substring)
-										if l_section_regex.has_matched then
-											l_text_formatter_decorator.put_new_line
-											l_substring := l_section_regex.captured_substring (1)
-											l_substring.replace_substring_all (". ", ".%N")
-											across l_substring.split ('%N') as lt_sentence loop
-												l_text_formatter_decorator.put_new_line
-												l_text_formatter_decorator.put_string_item (lt_sentence.item)
-											end
-										end
+										l_text_formatter_decorator.put_string_item (l_string_to_print)
 										l_text_formatter_decorator.put_string_item ("%"")
 										l_text_formatter_decorator.commit
 									end

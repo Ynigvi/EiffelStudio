@@ -1,47 +1,45 @@
 note
-	description: "Items for EB_GRID_LISTABLE_CHOICE_ITEM"
-	status: "See notice at end of class."
-	legal: "See notice at end of class."
+	description: "Summary description for {DOCX_CALLBACKS}."
+	author: ""
 	date: "$Date$"
 	revision: "$Revision$"
 
 class
-	EB_GRID_LISTABLE_CHOICE_ITEM_ITEM
+	DOCX_CALLBACKS
+
+inherit
+
+	XM_CALLBACKS_NULL
+		redefine
+			on_start,
+			on_content
+		end
 
 create
 	make
 
-feature	{NONE} -- Initialization
-
-	make (a_item: attached like item_components)
-			-- Initialization
-		do
-			item_components := a_item
-		ensure
-			item_components_set: item_components = a_item
-		end
-
-feature -- Element change
-
-	set_data (a_data: like data)
-			-- Set `data' with `a_data'
-		do
-			data := a_data
-		ensure
-			data_set: data = a_data
-		end
-
 feature -- Access
 
-	item_components: attached ARRAYED_LIST [ES_GRID_ITEM_COMPONENT]
-			-- Components of the item
+	content: STRING
 
-	data: detachable ANY;
-			-- Associated data
+feature -- Events
+
+	on_start
+		-- Initialize the content string
+	do
+		content := ""
+	end
+
+	on_content (a_content: STRING)
+		-- Append content.
+	do
+		content.append(a_content)
+	end
+
 
 note
 	copyright: "Copyright (c) 1984-2019, Eiffel Software"
-	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
+	license: "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[
 			This file is part of Eiffel Software's Eiffel Development Environment.
@@ -70,5 +68,4 @@ note
 			Website http://www.eiffel.com
 			Customer support http://support.eiffel.com
 		]"
-
 end

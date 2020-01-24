@@ -579,6 +579,9 @@ feature -- Command
 				{DEPEND_UNIT}.is_in_creation_flag))
 			l_managed_feature_formatters.extend (Void)
 
+			l_managed_feature_formatters.extend (create {EB_NOTE_RELATIONS_FORMATTER}.make (develop_window, 0))
+			l_managed_feature_formatters.extend (Void)
+
 			l_managed_feature_formatters.extend (create {EB_IMPLEMENTERS_FORMATTER}.make (develop_window))
 			l_managed_feature_formatters.extend (create {EB_ROUTINE_ANCESTORS_FORMATTER}.make (develop_window))
 			l_managed_feature_formatters.extend (create {EB_ROUTINE_DESCENDANTS_FORMATTER}.make (develop_window))
@@ -1120,7 +1123,7 @@ feature{NONE} -- Implementation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2019, Eiffel Software"
+	copyright: "Copyright (c) 1984-2020, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

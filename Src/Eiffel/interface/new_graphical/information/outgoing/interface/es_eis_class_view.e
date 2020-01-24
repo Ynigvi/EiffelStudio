@@ -700,6 +700,9 @@ feature {NONE} -- Callbacks
 			l_new_entry: EIS_ENTRY
 			l_done: BOOLEAN
 			l_source: STRING_32
+			l_prompt: EB_CHOOSE_BOOKMARK_DIALOG
+			l_bookmark: STRING
+			l_editable_item: ES_EIS_GRID_EDITABLE_ITEM
 		do
 			if attached {EIS_ENTRY} a_item.row.data as lt_entry and then a_value /= Void then
 				create l_source.make_from_string (a_value)
@@ -709,11 +712,25 @@ feature {NONE} -- Callbacks
 						-- Do nothing when the source is not actually changed
 				else
 					if entry_editable (lt_entry, False) then
+						if l_source.ends_with ("docx") then
+							create l_prompt.make_with_source (l_source)
+							l_prompt.show_on_active_window
+							if l_prompt.selected then
+								l_bookmark := l_prompt.bookmark
+							else
+								l_bookmark := ""
+							end
+						else
+							l_bookmark := ""
+						end
 						if attached id_solution.feature_of_id (lt_entry.target_id) as lt_feature then
 							if attached lt_entry.twin as lt_new_entry then
 								l_new_entry := lt_new_entry
 							end
 							l_new_entry.set_source (l_source)
+							if not l_bookmark.is_empty then
+								l_new_entry.parameters["bookmark"] := l_bookmark
+							end
 							modify_entry_in_feature (lt_entry, l_new_entry, lt_feature)
 							l_done := True
 						elseif attached {CLASS_I} id_solution.class_of_id (lt_entry.target_id) as lt_class then
@@ -721,6 +738,9 @@ feature {NONE} -- Callbacks
 								l_new_entry := lt_new_entry1
 							end
 							l_new_entry.set_source (l_source)
+							if not l_bookmark.is_empty then
+								l_new_entry.parameters["bookmark"] := l_bookmark
+							end
 							modify_entry_in_class (lt_entry, l_new_entry, lt_class)
 							l_done := True
 						end
@@ -729,6 +749,9 @@ feature {NONE} -- Callbacks
 							storage.deregister_entry (lt_entry, component_id)
 							lt_entry.set_source (l_source)
 							storage.register_entry (lt_entry, component_id, class_i.date)
+							if not l_bookmark.is_empty then
+								refresh_grid
+							end
 						end
 					end
 				end
@@ -935,7 +958,7 @@ feature {NONE} -- Callbacks
 		end
 
 note
-	copyright: "Copyright (c) 1984-2016, Eiffel Software"
+	copyright: "Copyright (c) 1984-2019, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[

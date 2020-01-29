@@ -769,6 +769,7 @@ feature -- Accelerator, focus label and menu name
 	m_Showpast: STRING_32				do Result := locale.translation("&Ancestor Versions")	end
 	m_Showroutines: STRING_32			do Result := locale.translation("&Routines")	end
 	m_Showshort: STRING_32				do Result := locale.translation("C&ontract")	end
+	m_Showdoc: STRING_32				do Result := locale.translation("D&ocumentation")	end
 	m_Showhomonyms: STRING_32			do Result := locale.translation("&Homonyms")	end
 	m_Showsuppliers: STRING_32			do Result := locale.translation("S&uppliers")	end
 	m_Showtext_new: STRING_32			do Result := locale.translation("Te&xt")	end
@@ -1387,6 +1388,7 @@ feature -- Label texts
 		do
 			Result := locale.formatted_string (locale.translation("Documentation Generated in $1"), [a_folder])
 		end
+	l_Doc: STRING_32					do Result := locale.translation("Documentation view")	end
 	l_Dont_ask_me_again: STRING_32		do Result := locale.translation("Do not ask me again")	end
 	l_Do_not_detect_stack_overflows: STRING_32 do Result := locale.translation("Do not detect stack overflows")	end
 	l_Do_not_show_again: STRING_32		do Result := locale.translation("Do not show again")	end
@@ -2336,6 +2338,7 @@ feature -- Title part
 	t_Calling_convention: STRING_32				do Result := locale.translation("Calling Convention")	end
 	t_Changed_after_last_run: STRING_32			do Result := locale.translation("Changed After Last Run")	end
 	t_Changed_time: STRING_32					do Result := locale.translation("Changed Time")	end
+	t_Choose_bookmark: STRING_32				do Result := locale.translation("Choose a Bookmark")	end
 	t_Choose_class: STRING_32					do Result := locale.translation("Choose a Class")	end
 	t_Choose_cluster: STRING_32					do Result := locale.translation("Choose a Cluster")	end
 	t_Choose_directory: STRING_32 				do Result := locale.translation("Choose Your Directory")	end
@@ -3044,7 +3047,7 @@ feature -- String escape
 		end
 
 note
-	copyright: "Copyright (c) 1984-2018, Eiffel Software"
+	copyright: "Copyright (c) 1984-2019, Eiffel Software"
 	license:   "GPL version 2 (see http://www.eiffel.com/licensing/gpl.txt)"
 	licensing_options: "http://www.eiffel.com/licensing"
 	copying: "[
